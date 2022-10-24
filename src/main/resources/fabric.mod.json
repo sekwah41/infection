@@ -1,0 +1,19 @@
+{
+  "schemaVersion": 1,
+  "version": "${version}",
+  "id": "infection",
+  "name": "Infection",
+  "environment" : "server",
+  "entrypoints": {
+    "server": [
+      "com.sekwah.infection.InfectionMod"
+    ]
+  },
+  "authors": [
+    "Sekwah"
+  ],
+  "description": "Custom infection mod",
+  "mixins": [
+    "mixins.infection.json"
+  ]
+}

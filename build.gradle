@@ -1,0 +1,40 @@
+plugins {
+	id 'fabric-loom' version '0.13-SNAPSHOT'
+	id "com.matthewprenger.cursegradle" version "1.4.0"
+	id 'net.researchgate.release' version '2.8.1'
+}
+
+sourceCompatibility = targetCompatibility = JavaVersion.VERSION_17
+
+archivesBaseName = project.archives_base_name
+group = project.maven_group
+
+repositories {
+	maven {
+		name = "FabricMC"
+		url = "https://maven.fabricmc.net"
+	}
+	maven {
+		name = 'ParchmentMC'
+		url = 'https://maven.parchmentmc.org'
+	}
+}
+
+processResources {
+	inputs.property "version", project.version
+
+	filesMatching("fabric.mod.json") {
+		expand "version": project.version
+	}
+}
+
+dependencies {
+	//to change the versions see the gradle.properties file
+	minecraft "com.mojang:minecraft:${project.minecraft_version}"
+	mappings loom.layered() {
+		officialMojangMappings()
+		parchment("org.parchmentmc.data:parchment-1.16.5:2022.03.06@zip")
+	}
+	modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
+	modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
+}

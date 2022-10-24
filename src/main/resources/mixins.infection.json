@@ -1,0 +1,12 @@
+{
+  "required": true,
+  "package": "com.sekwah.infection.mixin",
+  "compatibilityLevel": "JAVA_16",
+  "mixins": [
+  ],
+  "client": [
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}
