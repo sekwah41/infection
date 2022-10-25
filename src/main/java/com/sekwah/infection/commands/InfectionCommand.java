@@ -5,15 +5,13 @@ import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
+import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.suggestion.SuggestionProvider;
-import net.minecraft.ChatFormatting;
+import com.sekwah.infection.InfectionMod;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.SharedSuggestionProvider;
 import net.minecraft.network.chat.MutableComponent;
-import net.minecraft.network.chat.TextColor;
 import net.minecraft.network.chat.TextComponent;
-
-import java.time.format.TextStyle;
 
 import static net.minecraft.ChatFormatting.*;
 import static net.minecraft.commands.Commands.argument;
@@ -21,7 +19,7 @@ import static net.minecraft.commands.Commands.literal;
 
 public class InfectionCommand {
 
-    private static String[] SUB_COMMANDS = new String[]{"start", "stop", "reset", "infect"};
+    private static final String[] SUB_COMMANDS = new String[]{"infect", "start", "shownames", "hidenames"};
 
     private static SuggestionProvider<CommandSourceStack> SUB_COMMAND_SUGGESTIONS = (ctx, builder)
             -> SharedSuggestionProvider.suggest(SUB_COMMANDS, builder);
@@ -35,6 +33,12 @@ public class InfectionCommand {
         }).then(argument(FUNCTION_TRIGGER, StringArgumentType.word()).suggests(SUB_COMMAND_SUGGESTIONS).executes(ctx -> {
                     String subCommand = StringArgumentType.getString(ctx, FUNCTION_TRIGGER);
                     switch (subCommand) {
+                        case "hardreset" -> hardreset(ctx);
+                        case "shownames" -> shownames(ctx);
+                        case "hidenames" -> hidenames(ctx);
+                        case "infect" -> infect(ctx);
+                        case "stop" -> stop(ctx);
+                        case "start" -> start(ctx);
                         default -> unrecognised(ctx, subCommand);
                     }
                     return Command.SINGLE_SUCCESS;
@@ -42,6 +46,38 @@ public class InfectionCommand {
         );
 
         dispatcher.register(infection);
+    }
+
+    public static void hardreset(CommandContext<CommandSourceStack> ctx) {
+        sendInfectionMessage(ctx, new TextComponent("Hard resetting game").withStyle(GREEN));
+        InfectionMod.infectionController.hardReset();
+    }
+
+    public static void shownames(CommandContext<CommandSourceStack> ctx) {
+        sendInfectionMessage(ctx, new TextComponent("Showing speedrunner names").withStyle(GREEN));
+        InfectionMod.infectionController.setRunnerNamesVisible(true);
+    }
+
+    public static void hidenames(CommandContext<CommandSourceStack> ctx) {
+        sendInfectionMessage(ctx, new TextComponent("Hiding speedrunner names").withStyle(RED));
+        InfectionMod.infectionController.setRunnerNamesVisible(false);
+    }
+
+    public static void stop(CommandContext<CommandSourceStack> ctx) {
+        sendInfectionMessage(ctx, new TextComponent("Countdown cancelled!").withStyle(RED));
+    }
+
+    public static void start(CommandContext<CommandSourceStack> ctx) {
+        sendInfectionMessage(ctx, new TextComponent("Infection countdown started!").withStyle(GREEN));
+    }
+
+    public static void infect(CommandContext<CommandSourceStack> ctx) {
+        sendInfectionMessage(ctx, new TextComponent("A player will be infected shortly").withStyle(GREEN));
+        try {
+            InfectionMod.infectionController.infectPlayer(ctx.getSource().getPlayerOrException());
+        } catch (CommandSyntaxException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     public static TextComponent text(String text) {
