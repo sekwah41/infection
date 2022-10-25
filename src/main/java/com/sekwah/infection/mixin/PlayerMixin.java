@@ -1,28 +1,18 @@
 package com.sekwah.infection.mixin;
 
-import com.sekwah.infection.InfectionMod;
-import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.world.damagesource.DamageSource;
-import net.minecraft.world.entity.*;
-import net.minecraft.world.level.Level;
+import net.minecraft.world.entity.player.Player;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
-@Mixin(ServerPlayer.class)
-abstract class PlayerMixin extends LivingEntity {
+@Mixin(Player.class)
+public class PlayerMixin {
 
-    protected PlayerMixin(EntityType<? extends LivingEntity> entityType, Level level) {
-        super(entityType, level);
-    }
-
-    @Inject(method = "die", at = @At("TAIL"))
-    private void onPlayerDeath(DamageSource damageSource, CallbackInfo ci) {
-        LightningBolt bolt = EntityType.LIGHTNING_BOLT.create(this.level);
-        bolt.setPos(this.getX(), this.getY(), this.getZ());
-        bolt.setVisualOnly(true);
-        this.level.addFreshEntity(bolt);
-        InfectionMod.infectionController.infectPlayer((ServerPlayer) (Object) this);
+    @Inject(method = "canHarmPlayer", at = @At("HEAD"), cancellable = true)
+    private void canHarmPlayer(Player player, CallbackInfoReturnable<Boolean> cir) {
+        if((Player) (Object) this == player) {
+            cir.setReturnValue(true);
+        }
     }
 }

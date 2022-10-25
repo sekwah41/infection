@@ -5,7 +5,8 @@
   "mixins": [
   ],
   "server": [
-    "PlayerMixin"
+    "PlayerMixin",
+    "ServerPlayerMixin"
   ],
   "client": [
   ],

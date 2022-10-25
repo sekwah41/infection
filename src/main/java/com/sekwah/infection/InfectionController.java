@@ -7,6 +7,8 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.bossevents.CustomBossEvent;
 import net.minecraft.server.bossevents.CustomBossEvents;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.LightningBolt;
 import net.minecraft.world.scores.PlayerTeam;
 import net.minecraft.world.scores.Scoreboard;
 import net.minecraft.world.scores.Team;
@@ -102,6 +104,12 @@ public class InfectionController {
      */
     public void infectPlayer(ServerPlayer infected) {
         if(infected.getTeam() != null && !infected.getTeam().equals(adminTeam)){
+            if(infected.getTeam().equals(speedRunnerTeam)) {
+                LightningBolt bolt = EntityType.LIGHTNING_BOLT.create(infected.level);
+                bolt.setPos(infected.getX(), infected.getY(), infected.getZ());
+                bolt.setVisualOnly(true);
+                infected.level.addFreshEntity(bolt);
+            }
             scoreboard.addPlayerToTeam(infected.getName().getString(), infectedTeam);
         }
     }
