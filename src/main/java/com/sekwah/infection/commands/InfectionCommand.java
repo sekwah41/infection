@@ -19,7 +19,7 @@ import static net.minecraft.commands.Commands.literal;
 
 public class InfectionCommand {
 
-    private static final String[] SUB_COMMANDS = new String[]{"infect", "start", "shownames", "hidenames"};
+    private static final String[] SUB_COMMANDS = new String[]{"infect", "start", "shownames", "hidenames", "lock", "unlock"};
 
     private static SuggestionProvider<CommandSourceStack> SUB_COMMAND_SUGGESTIONS = (ctx, builder)
             -> SharedSuggestionProvider.suggest(SUB_COMMANDS, builder);
@@ -37,6 +37,8 @@ public class InfectionCommand {
                         case "shownames" -> shownames(ctx);
                         case "hidenames" -> hidenames(ctx);
                         case "infect" -> infect(ctx);
+                        case "lock" -> lock(ctx);
+                        case "unlock" -> unlock(ctx);
                         case "stop" -> stop(ctx);
                         case "start" -> start(ctx);
                         default -> unrecognised(ctx, subCommand);
@@ -58,6 +60,18 @@ public class InfectionCommand {
         InfectionMod.infectionController.setRunnerNamesVisible(true);
     }
 
+
+    public static void lock(CommandContext<CommandSourceStack> ctx) {
+        sendInfectionMessage(ctx, new TextComponent("Locking in the players").withStyle(GREEN));
+        InfectionMod.infectionController.lock();
+    }
+
+
+    public static void unlock(CommandContext<CommandSourceStack> ctx) {
+        sendInfectionMessage(ctx, new TextComponent("Unlocking the players").withStyle(RED));
+        InfectionMod.infectionController.unlock();
+    }
+
     public static void hidenames(CommandContext<CommandSourceStack> ctx) {
         sendInfectionMessage(ctx, new TextComponent("Hiding speedrunner names").withStyle(RED));
         InfectionMod.infectionController.setRunnerNamesVisible(false);
@@ -69,6 +83,7 @@ public class InfectionCommand {
 
     public static void start(CommandContext<CommandSourceStack> ctx) {
         sendInfectionMessage(ctx, new TextComponent("Infection countdown started!").withStyle(GREEN));
+        InfectionMod.infectionController.start();
     }
 
     public static void infect(CommandContext<CommandSourceStack> ctx) {

@@ -7,6 +7,7 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.bossevents.CustomBossEvent;
 import net.minecraft.server.bossevents.CustomBossEvents;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.server.players.UserWhiteListEntry;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LightningBolt;
 import net.minecraft.world.scores.PlayerTeam;
@@ -79,6 +80,27 @@ public class InfectionController {
 
     }
 
+    /**
+     * Lock in the current players.
+     */
+    public void lock() {
+        var whitelist = server.getPlayerList().getWhiteList();
+        for(ServerPlayer player : server.getPlayerList().getPlayers()) {
+            whitelist.add(new UserWhiteListEntry(player.getGameProfile()));
+            if(player.getTeam() != adminTeam) {
+                scoreboard.addPlayerToTeam(player.getGameProfile().getName(), speedRunnerTeam);
+            }
+        }
+        server.setEnforceWhitelist(true);
+    }
+    public void unlock() {
+        var whitelist = server.getPlayerList().getWhiteList();
+        for(var entry : whitelist.getEntries()) {
+            whitelist.remove(entry);
+        }
+        server.setEnforceWhitelist(false);
+    }
+
     private void configureSpeedrunnerTeam() {
         this.configureTeam(this.speedRunnerTeam, new TextComponent("Speed-runners"), new TextComponent("Alive"), ChatFormatting.GREEN, true);
     }
@@ -103,14 +125,14 @@ public class InfectionController {
      * @param infected
      */
     public void infectPlayer(ServerPlayer infected) {
-        if(infected.getTeam() != null && !infected.getTeam().equals(adminTeam)){
+        if(infected.getTeam() != adminTeam){
             if(infected.getTeam().equals(speedRunnerTeam)) {
                 LightningBolt bolt = EntityType.LIGHTNING_BOLT.create(infected.level);
                 bolt.setPos(infected.getX(), infected.getY(), infected.getZ());
                 bolt.setVisualOnly(true);
                 infected.level.addFreshEntity(bolt);
             }
-            scoreboard.addPlayerToTeam(infected.getName().getString(), infectedTeam);
+            scoreboard.addPlayerToTeam(infected.getGameProfile().getName(), infectedTeam);
         }
     }
 
@@ -127,5 +149,8 @@ public class InfectionController {
         else {
             this.speedRunnerTeam.setNameTagVisibility(Team.Visibility.HIDE_FOR_OTHER_TEAMS);
         }
+    }
+
+    public void start() {
     }
 }
