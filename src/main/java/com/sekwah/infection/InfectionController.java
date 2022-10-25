@@ -1,5 +1,6 @@
 package com.sekwah.infection;
 
+import com.sekwah.infection.mixin.FoodDataMixin;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.TextComponent;
 import net.minecraft.resources.ResourceLocation;
@@ -102,14 +103,14 @@ public class InfectionController {
     }
 
     private void configureSpeedrunnerTeam() {
-        this.configureTeam(this.speedRunnerTeam, new TextComponent("Speed-runners"), new TextComponent("Alive"), ChatFormatting.GREEN, true);
+        this.configureTeam(this.speedRunnerTeam, ChatFormatting.GREEN, true);
     }
 
     private void configureInfectedTeam() {
-        this.configureTeam(this.infectedTeam, new TextComponent("Infected"), new TextComponent("Inf"), ChatFormatting.RED, false);
+        this.configureTeam(this.infectedTeam, ChatFormatting.RED, false);
     }
 
-    private void configureTeam(PlayerTeam team, TextComponent name, TextComponent prefix, ChatFormatting color, boolean hideName) {
+    private void configureTeam(PlayerTeam team, ChatFormatting color, boolean hideName) {
         team.setAllowFriendlyFire(false);
         team.setSeeFriendlyInvisibles(true);
         team.setColor(color);
@@ -152,5 +153,20 @@ public class InfectionController {
     }
 
     public void start() {
+        for(ServerPlayer player : server.getPlayerList().getPlayers()) {
+            if(player.getTeam() != adminTeam) {
+                scoreboard.addPlayerToTeam(player.getGameProfile().getName(), speedRunnerTeam);
+                player.clearFire();
+                player.inventory.clearContent();
+                player.heal(100);
+                var foodData = player.getFoodData();
+                FoodDataMixin foodDataAccessor = (FoodDataMixin) player.getFoodData();
+                foodData.setFoodLevel(20);
+                foodDataAccessor.setSaturationLevel(5);
+                foodDataAccessor.setExhaustionLevel(0);
+                foodDataAccessor.setLastFoodLevel(20);
+                foodDataAccessor.setTickTimer(0);
+            }
+        }
     }
 }
