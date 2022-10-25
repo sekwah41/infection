@@ -1,8 +1,11 @@
-package com.sekwah.infection;
+package com.sekwah.infection.controller;
 
+import com.sekwah.infection.InfectionMod;
 import com.sekwah.infection.mixin.FoodDataMixin;
 import net.minecraft.ChatFormatting;
+import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.chat.TextComponent;
+import net.minecraft.network.protocol.game.ClientboundSetTitlesPacket;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.bossevents.CustomBossEvent;
@@ -15,12 +18,19 @@ import net.minecraft.world.scores.PlayerTeam;
 import net.minecraft.world.scores.Scoreboard;
 import net.minecraft.world.scores.Team;
 
+import java.util.Random;
+import java.util.stream.Collectors;
+
+import static com.sekwah.infection.commands.InfectionCommand.text;
+import static net.minecraft.ChatFormatting.AQUA;
+import static net.minecraft.ChatFormatting.GOLD;
+
 /**
  * Will handle the boss bars as well as any countdowns until more players getting infected
  */
 public class InfectionController {
 
-    private final CustomBossEvents bossevents;
+    public final CustomBossEvents bossevents;
     PlayerTeam speedRunnerTeam;
     PlayerTeam infectedTeam;
 
@@ -30,13 +40,14 @@ public class InfectionController {
     String SPEEDRUNNER = "speedrunner";
     String ADMIN = "admin";
 
-    final MinecraftServer server;
+    public final MinecraftServer server;
     final Scoreboard scoreboard;
 
     ResourceLocation INFECTION_COUNTDOWN_BAR = new ResourceLocation(InfectionMod.MOD_ID, "countdown");
     ResourceLocation PLAYER_COUNT_BAR = new ResourceLocation(InfectionMod.MOD_ID, "playercount");
-    private CustomBossEvent infectionCountdownBar;
     private CustomBossEvent playerCount;
+
+    private CountdownBar countdownBar;
 
     public InfectionController(MinecraftServer server) {
         this.server = server;
@@ -45,13 +56,13 @@ public class InfectionController {
     }
 
     public void init() {
+        this.countdownBar = new CountdownBar(new TextComponent("Infection Begins in "), INFECTION_COUNTDOWN_BAR, server);
         var scoreboard = server.getScoreboard();
 
         infectedTeam = scoreboard.getPlayerTeam(INFECTED);
         speedRunnerTeam = scoreboard.getPlayerTeam(SPEEDRUNNER);
         adminTeam = scoreboard.getPlayerTeam(ADMIN);
 
-        infectionCountdownBar = bossevents.get(INFECTION_COUNTDOWN_BAR);
         playerCount = bossevents.get(PLAYER_COUNT_BAR);
 
         if(infectedTeam == null) {
@@ -62,9 +73,6 @@ public class InfectionController {
         }
         if(adminTeam == null) {
             adminTeam = scoreboard.addPlayerTeam(ADMIN);
-        }
-        if(infectionCountdownBar == null) {
-            infectionCountdownBar = bossevents.create(INFECTION_COUNTDOWN_BAR, new TextComponent("Infection Countdown"));
         }
         if(playerCount == null) {
             playerCount = bossevents.create(PLAYER_COUNT_BAR, new TextComponent("Player Count"));
@@ -78,7 +86,7 @@ public class InfectionController {
      * Handle logic and timers that are needed and not event based
      */
     public void tick() {
-
+        countdownBar.tick();
     }
 
     /**
@@ -96,9 +104,7 @@ public class InfectionController {
     }
     public void unlock() {
         var whitelist = server.getPlayerList().getWhiteList();
-        for(var entry : whitelist.getEntries()) {
-            whitelist.remove(entry);
-        }
+        whitelist.getEntries().clear();
         server.setEnforceWhitelist(false);
     }
 
@@ -153,6 +159,29 @@ public class InfectionController {
     }
 
     public void start() {
+        setupPlayers();
+        this.countdownBar.startCountdown(20 /** 60*/ * 15);
+
+        // Example, try sending vanilla packets where you need to e.g. updating GameProfile
+        /*server.getPlayerList().getPlayers().forEach(player -> {
+            player.connection.send(new ClientboundSetTitlesPacket(20, 20 * 7, 20));
+            player.connection.send(new ClientboundSetTitlesPacket(ClientboundSetTitlesPacket.Type.TITLE,
+                    new TextComponent("Infection").withStyle(ChatFormatting.RED)
+                            .append(new TextComponent(" vs ").withStyle(ChatFormatting.WHITE))
+                            .append(new TextComponent("Speedrunners").withStyle(ChatFormatting.GREEN))));
+        });*/
+    }
+
+
+
+    public void broadcastMessage(MutableComponent component) {
+        server.sendMessage(text("").append(text("[").withStyle(GOLD))
+                .append(text("Infection").withStyle(AQUA)).append(
+                        text("]").withStyle(GOLD).append(text(" ")))
+                .append(component), null);
+    }
+
+    private void setupPlayers() {
         for(ServerPlayer player : server.getPlayerList().getPlayers()) {
             if(player.getTeam() != adminTeam) {
                 scoreboard.addPlayerToTeam(player.getGameProfile().getName(), speedRunnerTeam);
@@ -167,6 +196,21 @@ public class InfectionController {
                 foodDataAccessor.setLastFoodLevel(20);
                 foodDataAccessor.setTickTimer(0);
             }
+        }
+    }
+
+    /** infect a random player
+     *
+     */
+    public void infectPlayer() {
+        var players = server.getPlayerList().getPlayers().stream().filter(player -> player.getTeam() == speedRunnerTeam).toList();
+        if(players.size() == 0) {
+            return;
+        }
+        var random = new Random();
+        var player = players.get(random.nextInt(players.size()));
+        if(player.getTeam() != adminTeam) {
+            this.infectPlayer(player);
         }
     }
 }

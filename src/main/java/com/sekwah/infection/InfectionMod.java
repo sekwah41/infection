@@ -1,6 +1,7 @@
 package com.sekwah.infection;
 
 import com.sekwah.infection.commands.InfectionCommands;
+import com.sekwah.infection.controller.InfectionController;
 import net.fabricmc.api.DedicatedServerModInitializer;
 import net.fabricmc.fabric.api.command.v1.CommandRegistrationCallback;
 import net.fabricmc.fabric.api.entity.event.v1.ServerPlayerEvents;

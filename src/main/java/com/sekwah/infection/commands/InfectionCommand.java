@@ -108,6 +108,6 @@ public class InfectionCommand {
                         .append(text("Infection").withStyle(AQUA)).append(
                 text("]").withStyle(GOLD).append(text(" ")))
                         .append(text)
-                , true);
+                , false);
     }
 }
