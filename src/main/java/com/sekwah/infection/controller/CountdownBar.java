@@ -79,7 +79,6 @@ public class CountdownBar {
             customBar.setVisible(false);
             customBar.removeAllPlayers();
             InfectionMod.infectionController.infectPlayer();
-            return;
         }
         else {
             customBar.setVisible(true);

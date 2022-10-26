@@ -1,11 +1,16 @@
 package com.sekwah.infection.controller;
 
+import com.mojang.authlib.properties.Property;
 import com.sekwah.infection.InfectionMod;
 import com.sekwah.infection.mixin.FoodDataMixin;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.chat.TextComponent;
-import net.minecraft.network.protocol.game.ClientboundSetTitlesPacket;
+import net.minecraft.network.protocol.game.ClientboundPlayerInfoPacket;
+import net.minecraft.network.protocol.game.ClientboundPlayerPositionPacket;
+import net.minecraft.network.protocol.game.ClientboundRespawnPacket;
+import net.minecraft.network.protocol.game.ClientboundSetCarriedItemPacket;
+import net.minecraft.network.protocol.login.ClientboundGameProfilePacket;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.bossevents.CustomBossEvent;
@@ -14,10 +19,12 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.players.UserWhiteListEntry;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LightningBolt;
+import net.minecraft.world.level.biome.BiomeManager;
 import net.minecraft.world.scores.PlayerTeam;
 import net.minecraft.world.scores.Scoreboard;
 import net.minecraft.world.scores.Team;
 
+import java.util.Collections;
 import java.util.Random;
 import java.util.stream.Collectors;
 
@@ -140,7 +147,19 @@ public class InfectionController {
                 infected.level.addFreshEntity(bolt);
             }
             scoreboard.addPlayerToTeam(infected.getGameProfile().getName(), infectedTeam);
+            switchSkin(infected);
         }
+    }
+
+    private void emitSkinChange(ServerPlayer infected) {
+        server.getPlayerList().broadcastAll(new ClientboundPlayerInfoPacket(ClientboundPlayerInfoPacket.Action.REMOVE_PLAYER, infected));
+        server.getPlayerList().broadcastAll(new ClientboundPlayerInfoPacket(ClientboundPlayerInfoPacket.Action.ADD_PLAYER, infected));
+        var level = infected.getLevel();
+        server.getPlayerList().broadcastAll(new ClientboundRespawnPacket(level.dimensionType(), level.dimension(), BiomeManager.obfuscateSeed(level.getSeed()), infected.gameMode.getGameModeForPlayer(), infected.gameMode.getPreviousGameModeForPlayer(), level.isDebug(), level.isFlat(), true));
+        server.getPlayerList().broadcastAll(new ClientboundPlayerPositionPacket(infected.getX(), infected.getY(), infected.getZ(), infected.yRot, infected.xRot, Collections.emptySet(), 0));
+        infected.refreshContainer(infected.inventoryMenu);
+        infected.resetSentInfo();
+        server.getPlayerList().broadcastAll(new ClientboundSetCarriedItemPacket(infected.inventory.selected));
     }
 
     public void hardReset() {
@@ -163,7 +182,9 @@ public class InfectionController {
         this.countdownBar.startCountdown(20 /** 60*/ * 15);
 
         // Example, try sending vanilla packets where you need to e.g. updating GameProfile
-        /*server.getPlayerList().getPlayers().forEach(player -> {
+        /*
+        server.getPlayerList().broadcastAll();
+        server.getPlayerList().getPlayers().forEach(player -> {
             player.connection.send(new ClientboundSetTitlesPacket(20, 20 * 7, 20));
             player.connection.send(new ClientboundSetTitlesPacket(ClientboundSetTitlesPacket.Type.TITLE,
                     new TextComponent("Infection").withStyle(ChatFormatting.RED)
@@ -186,7 +207,7 @@ public class InfectionController {
             if(player.getTeam() != adminTeam) {
                 scoreboard.addPlayerToTeam(player.getGameProfile().getName(), speedRunnerTeam);
                 player.clearFire();
-                player.inventory.clearContent();
+                //player.inventory.clearContent();
                 player.heal(100);
                 var foodData = player.getFoodData();
                 FoodDataMixin foodDataAccessor = (FoodDataMixin) player.getFoodData();
@@ -212,5 +233,18 @@ public class InfectionController {
         if(player.getTeam() != adminTeam) {
             this.infectPlayer(player);
         }
+    }
+
+    public void switchSkin(ServerPlayer player) {
+        var profile = player.getGameProfile();
+        var properties = profile.getProperties();
+        var textures = properties.get("textures");
+        //player.connection.send(new ClientboundGameProfilePacket(profile));
+        textures.clear();
+        textures.add(new Property("textures",
+                "ewogICJ0aW1lc3RhbXAiIDogMTY2Njc2MDY1NDkwMSwKICAicHJvZmlsZUlkIiA6ICJkZDE2ZmEzNzJiODM0ZGU4YTM4NTc3OTkzODY2NWI1MSIsCiAgInByb2ZpbGVOYW1lIiA6ICJOYWV2ZV8iLAogICJzaWduYXR1cmVSZXF1aXJlZCIgOiB0cnVlLAogICJ0ZXh0dXJlcyIgOiB7CiAgICAiU0tJTiIgOiB7CiAgICAgICJ1cmwiIDogImh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvMmU3ZDBjZWJmMzZjNTViOTU1NDcyOWZmZGUzNTNhODBiY2M1OWE4NDlmOWUxOGNmZjkyZTRmMWUyYWE3NWJlMCIsCiAgICAgICJtZXRhZGF0YSIgOiB7CiAgICAgICAgIm1vZGVsIiA6ICJzbGltIgogICAgICB9CiAgICB9LAogICAgIkNBUEUiIDogewogICAgICAidXJsIiA6ICJodHRwOi8vdGV4dHVyZXMubWluZWNyYWZ0Lm5ldC90ZXh0dXJlLzIzNDBjMGUwM2RkMjRhMTFiMTVhOGIzM2MyYTdlOWUzMmFiYjIwNTFiMjQ4MWQwYmE3ZGVmZDYzNWNhN2E5MzMiCiAgICB9CiAgfQp9",
+                "JRpQzv71aoElbPKe3g1RlvC6jYOz4F3oQS361sVnRIT7tnb7ob5jsuF6/gc+ufHEzyD+/1jaemZEk7Qfhok+WTAsHyZSz8BOqUal37mYpv3Xs8W97sAg1IWwu62VklUK6ZD/kX/2eXa+NfFOo8DCJjtlo6gL9wD5utjm/iIpEwJO3F1c8zGTkHzBVQlyFKlpdqTATbi/GSXhoMpnoMOuiSNqZQ9P5jQ1rdFg+wDwcRBEtbzsUyM+ObawjWyJPccgGVSSM1MDGop455428gdsgWH7+9bkCPE2VskrvwQavnLiiFjSSVO/LJKQVU0KnBNAq/RLOmJFcv9i9lorgn8yOzLw9YJNYiyyqGAF+Y4tQCu8XfVSdnTzRzM/isYtvuE6cq3LmQksJoWm1szHj7c9w/V7kVSKa9clD8k01kpo4kSlAAtwYMbR5XU0aL2BSdPtnSUJU4bShxXB33LbVxL+VBlui/moBT12IytT5b2Sp7fmIfoq2twllbGnsp0YrhO+QQym77EvNQO0CgN2gz7cdrdWlRlr2ykvMFNwSNhHtgnxvOV4sEVq+CQf3VhrU7Tq4bAGC6R1BEuG9bW8ZhmU83qdKz5muwIjJwpr/yh4JcZ5Txkr++42+p+0hWBmEOpYP5PPSXISpA6ZWJN4B6MOjtPkMHzS8NoZ6pwyYXNMxK8="
+        ));
+        emitSkinChange(player);
     }
 }
