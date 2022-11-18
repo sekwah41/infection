@@ -10,8 +10,8 @@ import com.mojang.brigadier.suggestion.SuggestionProvider;
 import com.sekwah.infection.InfectionMod;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.SharedSuggestionProvider;
+import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
-import net.minecraft.network.chat.TextComponent;
 
 import static net.minecraft.ChatFormatting.*;
 import static net.minecraft.commands.Commands.argument;
@@ -28,7 +28,7 @@ public class InfectionCommand {
     public static void register(CommandDispatcher<CommandSourceStack> dispatcher) {
         LiteralArgumentBuilder<CommandSourceStack> infection = literal("infection").requires((sender) -> sender.hasPermission(2))
                 .executes(ctx -> {
-            ctx.getSource().sendSuccess(new TextComponent("Hey, this is the infection command :D"), true);
+            ctx.getSource().sendSuccess(Component.literal("Hey, this is the infection command :D"), true);
             return Command.SINGLE_SUCCESS;
         }).then(argument(FUNCTION_TRIGGER, StringArgumentType.word()).suggests(SUB_COMMAND_SUGGESTIONS).executes(ctx -> {
                     String subCommand = StringArgumentType.getString(ctx, FUNCTION_TRIGGER);
@@ -51,43 +51,43 @@ public class InfectionCommand {
     }
 
     public static void hardreset(CommandContext<CommandSourceStack> ctx) {
-        sendInfectionMessage(ctx, new TextComponent("Hard resetting game").withStyle(GREEN));
+        sendInfectionMessage(ctx, Component.literal("Hard resetting game").withStyle(GREEN));
         InfectionMod.infectionController.hardReset();
     }
 
     public static void shownames(CommandContext<CommandSourceStack> ctx) {
-        sendInfectionMessage(ctx, new TextComponent("Showing speedrunner names").withStyle(GREEN));
+        sendInfectionMessage(ctx, Component.literal("Showing speedrunner names").withStyle(GREEN));
         InfectionMod.infectionController.setRunnerNamesVisible(true);
     }
 
 
     public static void lock(CommandContext<CommandSourceStack> ctx) {
-        sendInfectionMessage(ctx, new TextComponent("Locking in the players").withStyle(GREEN));
+        sendInfectionMessage(ctx, Component.literal("Locking in the players").withStyle(GREEN));
         InfectionMod.infectionController.lock();
     }
 
 
     public static void unlock(CommandContext<CommandSourceStack> ctx) {
-        sendInfectionMessage(ctx, new TextComponent("Unlocking the players").withStyle(RED));
+        sendInfectionMessage(ctx, Component.literal("Unlocking the players").withStyle(RED));
         InfectionMod.infectionController.unlock();
     }
 
     public static void hidenames(CommandContext<CommandSourceStack> ctx) {
-        sendInfectionMessage(ctx, new TextComponent("Hiding speedrunner names").withStyle(RED));
+        sendInfectionMessage(ctx, Component.literal("Hiding speedrunner names").withStyle(RED));
         InfectionMod.infectionController.setRunnerNamesVisible(false);
     }
 
     public static void stop(CommandContext<CommandSourceStack> ctx) {
-        sendInfectionMessage(ctx, new TextComponent("Countdown cancelled!").withStyle(RED));
+        sendInfectionMessage(ctx, Component.literal("Countdown cancelled!").withStyle(RED));
     }
 
     public static void start(CommandContext<CommandSourceStack> ctx) {
-        sendInfectionMessage(ctx, new TextComponent("Infection countdown started!").withStyle(GREEN));
+        sendInfectionMessage(ctx, Component.literal("Infection countdown started!").withStyle(GREEN));
         InfectionMod.infectionController.start();
     }
 
     public static void infect(CommandContext<CommandSourceStack> ctx) {
-        sendInfectionMessage(ctx, new TextComponent("A player will be infected shortly").withStyle(GREEN));
+        sendInfectionMessage(ctx, Component.literal("A player will be infected shortly").withStyle(GREEN));
         try {
             InfectionMod.infectionController.infectPlayer(ctx.getSource().getPlayerOrException());
         } catch (CommandSyntaxException e) {
@@ -95,12 +95,12 @@ public class InfectionCommand {
         }
     }
 
-    public static TextComponent text(String text) {
-        return new TextComponent(text);
+    public static MutableComponent text(String text) {
+        return Component.literal(text);
     }
 
     public static void unrecognised(CommandContext<CommandSourceStack> ctx, String subCommand) {
-        sendInfectionMessage(ctx, new TextComponent("Did not recognise subcommand: " + subCommand).withStyle(RED));
+        sendInfectionMessage(ctx, Component.literal("Did not recognise subcommand: " + subCommand).withStyle(RED));
     }
 
     public static void sendInfectionMessage(CommandContext<CommandSourceStack> ctx, MutableComponent text) {

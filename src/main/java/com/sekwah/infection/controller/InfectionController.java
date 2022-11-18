@@ -4,13 +4,12 @@ import com.mojang.authlib.properties.Property;
 import com.sekwah.infection.InfectionMod;
 import com.sekwah.infection.mixin.FoodDataMixin;
 import net.minecraft.ChatFormatting;
+import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
-import net.minecraft.network.chat.TextComponent;
 import net.minecraft.network.protocol.game.ClientboundPlayerInfoPacket;
 import net.minecraft.network.protocol.game.ClientboundPlayerPositionPacket;
 import net.minecraft.network.protocol.game.ClientboundRespawnPacket;
 import net.minecraft.network.protocol.game.ClientboundSetCarriedItemPacket;
-import net.minecraft.network.protocol.login.ClientboundGameProfilePacket;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.bossevents.CustomBossEvent;
@@ -63,7 +62,7 @@ public class InfectionController {
     }
 
     public void init() {
-        this.countdownBar = new CountdownBar(new TextComponent("Infection Begins in "), INFECTION_COUNTDOWN_BAR, server);
+        this.countdownBar = new CountdownBar(Component.literal("Infection Begins in "), INFECTION_COUNTDOWN_BAR, server);
         var scoreboard = server.getScoreboard();
 
         infectedTeam = scoreboard.getPlayerTeam(INFECTED);
@@ -82,7 +81,7 @@ public class InfectionController {
             adminTeam = scoreboard.addPlayerTeam(ADMIN);
         }
         if(playerCount == null) {
-            playerCount = bossevents.create(PLAYER_COUNT_BAR, new TextComponent("Player Count"));
+            playerCount = bossevents.create(PLAYER_COUNT_BAR, Component.literal("Player Count"));
         }
 
         configureInfectedTeam();
@@ -127,7 +126,7 @@ public class InfectionController {
         team.setAllowFriendlyFire(false);
         team.setSeeFriendlyInvisibles(true);
         team.setColor(color);
-        team.setPlayerSuffix(new TextComponent("").withStyle(ChatFormatting.RESET));
+        team.setPlayerSuffix(Component.literal("").withStyle(ChatFormatting.RESET));
         team.setCollisionRule(PlayerTeam.CollisionRule.NEVER);
         if(hideName) {
             team.setNameTagVisibility(Team.Visibility.HIDE_FOR_OTHER_TEAMS);
@@ -155,11 +154,20 @@ public class InfectionController {
         server.getPlayerList().broadcastAll(new ClientboundPlayerInfoPacket(ClientboundPlayerInfoPacket.Action.REMOVE_PLAYER, infected));
         server.getPlayerList().broadcastAll(new ClientboundPlayerInfoPacket(ClientboundPlayerInfoPacket.Action.ADD_PLAYER, infected));
         var level = infected.getLevel();
-        server.getPlayerList().broadcastAll(new ClientboundRespawnPacket(level.dimensionType(), level.dimension(), BiomeManager.obfuscateSeed(level.getSeed()), infected.gameMode.getGameModeForPlayer(), infected.gameMode.getPreviousGameModeForPlayer(), level.isDebug(), level.isFlat(), true));
-        server.getPlayerList().broadcastAll(new ClientboundPlayerPositionPacket(infected.getX(), infected.getY(), infected.getZ(), infected.yRot, infected.xRot, Collections.emptySet(), 0));
-        infected.refreshContainer(infected.inventoryMenu);
+        server.getPlayerList().broadcastAll(new ClientboundRespawnPacket(level.dimensionTypeId(),
+                level.dimension(),
+                BiomeManager.obfuscateSeed(level.getSeed()),
+                infected.gameMode.getGameModeForPlayer(),
+                infected.gameMode.getPreviousGameModeForPlayer(),
+                level.isDebug(),
+                level.isFlat(),
+                true,
+                infected.getLastDeathLocation()));
+
+        server.getPlayerList().broadcastAll(new ClientboundPlayerPositionPacket(infected.getX(), infected.getY(), infected.getZ(), infected.getYRot(), infected.getXRot(), Collections.emptySet(), 0, false));
+        //infected.resetSentInfo(infected.inventoryMenu);
         infected.resetSentInfo();
-        server.getPlayerList().broadcastAll(new ClientboundSetCarriedItemPacket(infected.inventory.selected));
+        server.getPlayerList().broadcastAll(new ClientboundSetCarriedItemPacket(infected.getInventory().selected));
     }
 
     public void hardReset() {
@@ -187,19 +195,19 @@ public class InfectionController {
         server.getPlayerList().getPlayers().forEach(player -> {
             player.connection.send(new ClientboundSetTitlesPacket(20, 20 * 7, 20));
             player.connection.send(new ClientboundSetTitlesPacket(ClientboundSetTitlesPacket.Type.TITLE,
-                    new TextComponent("Infection").withStyle(ChatFormatting.RED)
-                            .append(new TextComponent(" vs ").withStyle(ChatFormatting.WHITE))
-                            .append(new TextComponent("Speedrunners").withStyle(ChatFormatting.GREEN))));
+                    Component.literal("Infection").withStyle(ChatFormatting.RED)
+                            .append(Component.literal(" vs ").withStyle(ChatFormatting.WHITE))
+                            .append(Component.literal("Speedrunners").withStyle(ChatFormatting.GREEN))));
         });*/
     }
 
 
 
     public void broadcastMessage(MutableComponent component) {
-        server.sendMessage(text("").append(text("[").withStyle(GOLD))
+        server.sendSystemMessage(text("").append(text("[").withStyle(GOLD))
                 .append(text("Infection").withStyle(AQUA)).append(
                         text("]").withStyle(GOLD).append(text(" ")))
-                .append(component), null);
+                .append(component));
     }
 
     private void setupPlayers() {

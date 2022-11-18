@@ -3,7 +3,7 @@ package com.sekwah.infection;
 import com.sekwah.infection.commands.InfectionCommands;
 import com.sekwah.infection.controller.InfectionController;
 import net.fabricmc.api.DedicatedServerModInitializer;
-import net.fabricmc.fabric.api.command.v1.CommandRegistrationCallback;
+import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import net.fabricmc.fabric.api.entity.event.v1.ServerPlayerEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
@@ -19,7 +19,7 @@ public class InfectionMod implements DedicatedServerModInitializer {
 
     @Override
     public void onInitializeServer() {
-        CommandRegistrationCallback.EVENT.register(((dispatcher, dedicated) -> {
+        CommandRegistrationCallback.EVENT.register(((dispatcher, dedicated, selection) -> {
             InfectionCommands.register(dispatcher);
         }));
 

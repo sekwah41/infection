@@ -1,5 +1,5 @@
 plugins {
-	id 'fabric-loom' version '0.13-SNAPSHOT'
+	id 'fabric-loom' version '1.0-SNAPSHOT'
 	id "com.matthewprenger.cursegradle" version "1.4.0"
 	id 'net.researchgate.release' version '2.8.1'
 }
@@ -33,7 +33,7 @@ dependencies {
 	minecraft "com.mojang:minecraft:${project.minecraft_version}"
 	mappings loom.layered() {
 		officialMojangMappings()
-		parchment("org.parchmentmc.data:parchment-1.16.5:2022.03.06@zip")
+		parchment("org.parchmentmc.data:parchment-1.19.2:2022.11.06@zip")
 	}
 	modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
 	modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
