@@ -6,10 +6,8 @@ import com.sekwah.infection.mixin.FoodDataMixin;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
-import net.minecraft.network.protocol.game.ClientboundPlayerInfoPacket;
-import net.minecraft.network.protocol.game.ClientboundPlayerPositionPacket;
-import net.minecraft.network.protocol.game.ClientboundRespawnPacket;
-import net.minecraft.network.protocol.game.ClientboundSetCarriedItemPacket;
+import net.minecraft.network.protocol.Packet;
+import net.minecraft.network.protocol.game.*;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.bossevents.CustomBossEvent;
@@ -18,6 +16,7 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.players.UserWhiteListEntry;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LightningBolt;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.biome.BiomeManager;
 import net.minecraft.world.scores.PlayerTeam;
 import net.minecraft.world.scores.Scoreboard;
@@ -150,7 +149,8 @@ public class InfectionController {
         server.getPlayerList().broadcastAll(new ClientboundPlayerInfoPacket(ClientboundPlayerInfoPacket.Action.REMOVE_PLAYER, infected));
         server.getPlayerList().broadcastAll(new ClientboundPlayerInfoPacket(ClientboundPlayerInfoPacket.Action.ADD_PLAYER, infected));
         var level = infected.getLevel();
-        server.getPlayerList().broadcastAll(new ClientboundRespawnPacket(level.dimensionTypeId(),
+
+        infected.connection.send(new ClientboundRespawnPacket(level.dimensionTypeId(),
                 level.dimension(),
                 BiomeManager.obfuscateSeed(level.getSeed()),
                 infected.gameMode.getGameModeForPlayer(),
@@ -161,9 +161,16 @@ public class InfectionController {
                 infected.getLastDeathLocation()));
 
         infected.connection.send(new ClientboundPlayerPositionPacket(infected.getX(), infected.getY(), infected.getZ(), infected.getYRot(), infected.getXRot(), Collections.emptySet(), 0, false));
-        //infected.resetSentInfo(infected.inventoryMenu);
         infected.connection.send(new ClientboundSetCarriedItemPacket(infected.getInventory().selected));
         infected.inventoryMenu.sendAllDataToRemote();
+    }
+
+    private void broadcastToAllBut(ServerPlayer player, Packet packet) {
+        for(ServerPlayer serverPlayer : server.getPlayerList().getPlayers()) {
+            if(serverPlayer != player) {
+                serverPlayer.connection.send(packet);
+            }
+        }
     }
 
     public void hardReset() {
@@ -183,7 +190,7 @@ public class InfectionController {
 
     public void start() {
         setupPlayers();
-        this.countdownBar.startCountdown(20 /** 60*/ * 15);
+        this.countdownBar.startCountdown(20 /** 60*/ * 5);//15);
 
         // Example, try sending vanilla packets where you need to e.g. updating GameProfile
         /*
