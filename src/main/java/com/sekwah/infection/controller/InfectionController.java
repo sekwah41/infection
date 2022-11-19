@@ -23,8 +23,7 @@ import net.minecraft.world.scores.PlayerTeam;
 import net.minecraft.world.scores.Scoreboard;
 import net.minecraft.world.scores.Team;
 
-import java.util.Collections;
-import java.util.Random;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static com.sekwah.infection.commands.InfectionCommand.text;
@@ -104,6 +103,7 @@ public class InfectionController {
             whitelist.add(new UserWhiteListEntry(player.getGameProfile()));
             if(player.getTeam() != adminTeam) {
                 scoreboard.addPlayerToTeam(player.getGameProfile().getName(), speedRunnerTeam);
+                revertSkin(player);
             }
         }
         server.setEnforceWhitelist(true);
@@ -214,6 +214,7 @@ public class InfectionController {
         for(ServerPlayer player : server.getPlayerList().getPlayers()) {
             if(player.getTeam() != adminTeam) {
                 scoreboard.addPlayerToTeam(player.getGameProfile().getName(), speedRunnerTeam);
+                revertSkin(player);
                 player.clearFire();
                 //player.inventory.clearContent();
                 player.heal(100);
@@ -243,16 +244,39 @@ public class InfectionController {
         }
     }
 
+    public Map<UUID, Property> originalSkins = new HashMap<>();
+
+    public final Property ZOMBIE_SKIN = new Property("textures",
+            "ewogICJ0aW1lc3RhbXAiIDogMTY2Njk2NzYzNjc1MSwKICAicHJvZmlsZUlkIiA6ICIxMWM1YzYxYWYwMDg0MzM2OTNmYzFhNmIzMmU1NTczOSIsCiAgInByb2ZpbGVOYW1lIiA6ICJ4TUFSQ1VTS3giLAogICJzaWduYXR1cmVSZXF1aXJlZCIgOiB0cnVlLAogICJ0ZXh0dXJlcyIgOiB7CiAgICAiU0tJTiIgOiB7CiAgICAgICJ1cmwiIDogImh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvMzg4Mjg4NjI5MGZiYmRjZjZiYzNiZDM1MThlNGRkNjJlYTYwYTBiZDliNjljMTM1ZmUwNzRlNTYwZjhkODdlOSIKICAgIH0KICB9Cn0=",
+            "tkwFHQAsnEwRWl0ykv8XGFowQBRGaxKdu/+2Lhl/+6B+JyGpG+lBViGteitleJfV32NzLQxn/NeUxXQtyDb5C/gTnJDmn1Mz1Gd2sDN/BeKcGKUlx3C5BSCWJtKmgOtFjznguXFlkFGpYvrIPaihNiCSoYwZFRIdW4r53IhajGdDMZuye0HmMPmgwdZEjNfBOhIODgP77IJ3zYlR3/Iw82VWVUJnze/v52hqS3prZp6fQviXiOU7RkA0Y2hdgmcXremogJUy7S78Ug0u/lIUeeeMcjhmR2l76pcYkL+ioScBtAM24/sfZ8+TUc4afhvPOyyfW8cTiFVXRdwlHt5HsSWVQCY6opDgD91Inwi9n0X34NPIIURc//GrdcDCmU8fdBbGOFH/ocPvOJm5wRHKG1k1qg6WLO/yIBJ9+if24lPbPB77F6U1ys3wQKzq6N+qGEcLn3sj3L4osm5nC9T8sguD7u5ATNuWlOpFyD5laTwxVsi5ycnSR4c25XSJu0/I1vEInox0QKbqJiYWBT6DYoXYSfsLBzPdNn+6OFgGiOqeLoymx3TpKArSVasilngcp/jnyNC5d5HuXVw3IwlQT0S7lgoW4SF7nOczRuF/srAtaktNiYz3y+djwd6mDzgOUetsKarBpUmfF3UIDQd1TFQ/JZOuE7CYJgJSQmfwqmY="
+    );
+
     public void switchSkin(ServerPlayer player) {
         var profile = player.getGameProfile();
         var properties = profile.getProperties();
         var textures = properties.get("textures");
-        //player.connection.send(new ClientboundGameProfilePacket(profile));
-        textures.clear();
-        textures.add(new Property("textures",
-                "ewogICJ0aW1lc3RhbXAiIDogMTY2Njk2NzYzNjc1MSwKICAicHJvZmlsZUlkIiA6ICIxMWM1YzYxYWYwMDg0MzM2OTNmYzFhNmIzMmU1NTczOSIsCiAgInByb2ZpbGVOYW1lIiA6ICJ4TUFSQ1VTS3giLAogICJzaWduYXR1cmVSZXF1aXJlZCIgOiB0cnVlLAogICJ0ZXh0dXJlcyIgOiB7CiAgICAiU0tJTiIgOiB7CiAgICAgICJ1cmwiIDogImh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvMzg4Mjg4NjI5MGZiYmRjZjZiYzNiZDM1MThlNGRkNjJlYTYwYTBiZDliNjljMTM1ZmUwNzRlNTYwZjhkODdlOSIKICAgIH0KICB9Cn0=",
-                "tkwFHQAsnEwRWl0ykv8XGFowQBRGaxKdu/+2Lhl/+6B+JyGpG+lBViGteitleJfV32NzLQxn/NeUxXQtyDb5C/gTnJDmn1Mz1Gd2sDN/BeKcGKUlx3C5BSCWJtKmgOtFjznguXFlkFGpYvrIPaihNiCSoYwZFRIdW4r53IhajGdDMZuye0HmMPmgwdZEjNfBOhIODgP77IJ3zYlR3/Iw82VWVUJnze/v52hqS3prZp6fQviXiOU7RkA0Y2hdgmcXremogJUy7S78Ug0u/lIUeeeMcjhmR2l76pcYkL+ioScBtAM24/sfZ8+TUc4afhvPOyyfW8cTiFVXRdwlHt5HsSWVQCY6opDgD91Inwi9n0X34NPIIURc//GrdcDCmU8fdBbGOFH/ocPvOJm5wRHKG1k1qg6WLO/yIBJ9+if24lPbPB77F6U1ys3wQKzq6N+qGEcLn3sj3L4osm5nC9T8sguD7u5ATNuWlOpFyD5laTwxVsi5ycnSR4c25XSJu0/I1vEInox0QKbqJiYWBT6DYoXYSfsLBzPdNn+6OFgGiOqeLoymx3TpKArSVasilngcp/jnyNC5d5HuXVw3IwlQT0S7lgoW4SF7nOczRuF/srAtaktNiYz3y+djwd6mDzgOUetsKarBpUmfF3UIDQd1TFQ/JZOuE7CYJgJSQmfwqmY="
-        ));
-        emitSkinChange(player);
+
+        var originalSkin = textures.iterator().next();
+        if(originalSkin != ZOMBIE_SKIN) {
+            originalSkins.put(player.getUUID(), originalSkin);
+
+            textures.clear();
+            textures.add(ZOMBIE_SKIN);
+            emitSkinChange(player);
+        }
+    }
+
+    public void revertSkin(ServerPlayer player) {
+        var profile = player.getGameProfile();
+        var properties = profile.getProperties();
+        var textures = properties.get("textures");
+
+        if(ZOMBIE_SKIN == textures.iterator().next()) {
+            if(originalSkins.containsKey(player.getUUID())) {
+                textures.clear();
+                textures.add(originalSkins.get(player.getUUID()));
+                emitSkinChange(player);
+            }
+        }
     }
 }
