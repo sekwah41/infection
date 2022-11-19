@@ -150,7 +150,7 @@ public class InfectionController {
         server.getPlayerList().broadcastAll(new ClientboundPlayerInfoPacket(ClientboundPlayerInfoPacket.Action.REMOVE_PLAYER, infected));
         server.getPlayerList().broadcastAll(new ClientboundPlayerInfoPacket(ClientboundPlayerInfoPacket.Action.ADD_PLAYER, infected));
         var level = infected.getLevel();
-        infected.connection.send(new ClientboundRespawnPacket(level.dimensionTypeId(),
+        server.getPlayerList().broadcastAll(new ClientboundRespawnPacket(level.dimensionTypeId(),
                 level.dimension(),
                 BiomeManager.obfuscateSeed(level.getSeed()),
                 infected.gameMode.getGameModeForPlayer(),
@@ -163,7 +163,7 @@ public class InfectionController {
         infected.connection.send(new ClientboundPlayerPositionPacket(infected.getX(), infected.getY(), infected.getZ(), infected.getYRot(), infected.getXRot(), Collections.emptySet(), 0, false));
         //infected.resetSentInfo(infected.inventoryMenu);
         infected.connection.send(new ClientboundSetCarriedItemPacket(infected.getInventory().selected));
-        infected.resetSentInfo();
+        infected.inventoryMenu.sendAllDataToRemote();
     }
 
     public void hardReset() {
