@@ -160,6 +160,10 @@ public class InfectionController {
                 true,
                 infected.getLastDeathLocation()));
 
+        broadcastToAllBut(infected, new ClientboundRemoveEntitiesPacket(infected.getId()));
+        broadcastToAllBut(infected, new ClientboundAddPlayerPacket(infected));
+
+
         infected.connection.send(new ClientboundPlayerPositionPacket(infected.getX(), infected.getY(), infected.getZ(), infected.getYRot(), infected.getXRot(), Collections.emptySet(), 0, false));
         infected.connection.send(new ClientboundSetCarriedItemPacket(infected.getInventory().selected));
         infected.inventoryMenu.sendAllDataToRemote();
