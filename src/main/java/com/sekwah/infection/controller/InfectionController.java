@@ -49,10 +49,9 @@ public class InfectionController {
     final Scoreboard scoreboard;
 
     ResourceLocation INFECTION_COUNTDOWN_BAR = new ResourceLocation(InfectionMod.MOD_ID, "countdown");
-    ResourceLocation PLAYER_COUNT_BAR = new ResourceLocation(InfectionMod.MOD_ID, "playercount");
-    private CustomBossEvent playerCount;
 
     private CountdownBar countdownBar;
+    private RemainingPlayersBar remainingPlayersBar;
 
     public InfectionController(MinecraftServer server) {
         this.server = server;
@@ -62,13 +61,12 @@ public class InfectionController {
 
     public void init() {
         this.countdownBar = new CountdownBar(Component.literal("Infection Begins in "), INFECTION_COUNTDOWN_BAR, server);
+        this.remainingPlayersBar = new RemainingPlayersBar(server);
         var scoreboard = server.getScoreboard();
 
         infectedTeam = scoreboard.getPlayerTeam(INFECTED);
         speedRunnerTeam = scoreboard.getPlayerTeam(SPEEDRUNNER);
         adminTeam = scoreboard.getPlayerTeam(ADMIN);
-
-        playerCount = bossevents.get(PLAYER_COUNT_BAR);
 
         if(infectedTeam == null) {
             infectedTeam = scoreboard.addPlayerTeam(INFECTED);
@@ -78,9 +76,6 @@ public class InfectionController {
         }
         if(adminTeam == null) {
             adminTeam = scoreboard.addPlayerTeam(ADMIN);
-        }
-        if(playerCount == null) {
-            playerCount = bossevents.create(PLAYER_COUNT_BAR, Component.literal("Player Count"));
         }
 
         configureInfectedTeam();
@@ -92,6 +87,7 @@ public class InfectionController {
      */
     public void tick() {
         countdownBar.tick();
+        remainingPlayersBar.tick();
     }
 
     /**
@@ -154,7 +150,7 @@ public class InfectionController {
         server.getPlayerList().broadcastAll(new ClientboundPlayerInfoPacket(ClientboundPlayerInfoPacket.Action.REMOVE_PLAYER, infected));
         server.getPlayerList().broadcastAll(new ClientboundPlayerInfoPacket(ClientboundPlayerInfoPacket.Action.ADD_PLAYER, infected));
         var level = infected.getLevel();
-        server.getPlayerList().broadcastAll(new ClientboundRespawnPacket(level.dimensionTypeId(),
+        infected.connection.send(new ClientboundRespawnPacket(level.dimensionTypeId(),
                 level.dimension(),
                 BiomeManager.obfuscateSeed(level.getSeed()),
                 infected.gameMode.getGameModeForPlayer(),
@@ -164,10 +160,10 @@ public class InfectionController {
                 true,
                 infected.getLastDeathLocation()));
 
-        server.getPlayerList().broadcastAll(new ClientboundPlayerPositionPacket(infected.getX(), infected.getY(), infected.getZ(), infected.getYRot(), infected.getXRot(), Collections.emptySet(), 0, false));
+        infected.connection.send(new ClientboundPlayerPositionPacket(infected.getX(), infected.getY(), infected.getZ(), infected.getYRot(), infected.getXRot(), Collections.emptySet(), 0, false));
         //infected.resetSentInfo(infected.inventoryMenu);
+        infected.connection.send(new ClientboundSetCarriedItemPacket(infected.getInventory().selected));
         infected.resetSentInfo();
-        server.getPlayerList().broadcastAll(new ClientboundSetCarriedItemPacket(infected.getInventory().selected));
     }
 
     public void hardReset() {
