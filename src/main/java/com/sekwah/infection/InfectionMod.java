@@ -1,7 +1,10 @@
 package com.sekwah.infection;
 
 import com.sekwah.infection.commands.InfectionCommands;
+import com.sekwah.infection.config.InfectionConfig;
 import com.sekwah.infection.controller.InfectionController;
+import me.shedaniel.autoconfig.AutoConfig;
+import me.shedaniel.autoconfig.serializer.GsonConfigSerializer;
 import net.fabricmc.api.DedicatedServerModInitializer;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import net.fabricmc.fabric.api.entity.event.v1.ServerPlayerEvents;
@@ -19,6 +22,9 @@ public class InfectionMod implements DedicatedServerModInitializer {
 
     @Override
     public void onInitializeServer() {
+
+        AutoConfig.register(InfectionConfig.class, GsonConfigSerializer::new);
+
         CommandRegistrationCallback.EVENT.register(((dispatcher, dedicated, selection) -> {
             InfectionCommands.register(dispatcher);
         }));

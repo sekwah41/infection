@@ -2,7 +2,10 @@ package com.sekwah.infection.controller;
 
 import com.mojang.authlib.properties.Property;
 import com.sekwah.infection.InfectionMod;
+import com.sekwah.infection.config.InfectionConfig;
 import com.sekwah.infection.mixin.FoodDataMixin;
+import me.shedaniel.autoconfig.AutoConfig;
+import me.shedaniel.autoconfig.ConfigHolder;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
@@ -48,6 +51,10 @@ public class InfectionController {
 
     private CountdownBar countdownBar;
     private RemainingPlayersBar remainingPlayersBar;
+
+
+    private static final ConfigHolder<InfectionConfig> configHolder = AutoConfig.getConfigHolder(InfectionConfig.class);
+    private static final InfectionConfig config = configHolder.getConfig();
 
     private boolean started = false;
 
