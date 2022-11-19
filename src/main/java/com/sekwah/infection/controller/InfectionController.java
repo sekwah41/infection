@@ -10,20 +10,17 @@ import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.*;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.bossevents.CustomBossEvent;
 import net.minecraft.server.bossevents.CustomBossEvents;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.players.UserWhiteListEntry;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LightningBolt;
-import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.biome.BiomeManager;
 import net.minecraft.world.scores.PlayerTeam;
 import net.minecraft.world.scores.Scoreboard;
 import net.minecraft.world.scores.Team;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 import static com.sekwah.infection.commands.InfectionCommand.text;
 import static net.minecraft.ChatFormatting.AQUA;
@@ -35,10 +32,10 @@ import static net.minecraft.ChatFormatting.GOLD;
 public class InfectionController {
 
     public final CustomBossEvents bossevents;
-    PlayerTeam speedRunnerTeam;
-    PlayerTeam infectedTeam;
+    public PlayerTeam speedRunnerTeam;
+    public PlayerTeam infectedTeam;
 
-    PlayerTeam adminTeam;
+    public PlayerTeam adminTeam;
 
     String INFECTED = "infected";
     String SPEEDRUNNER = "speedrunner";
@@ -51,6 +48,8 @@ public class InfectionController {
 
     private CountdownBar countdownBar;
     private RemainingPlayersBar remainingPlayersBar;
+
+    private boolean started = false;
 
     public InfectionController(MinecraftServer server) {
         this.server = server;
@@ -192,9 +191,11 @@ public class InfectionController {
         }
     }
 
-    public void start() {
+    public void startCountdown() {
+        started = false;
         setupPlayers();
-        this.countdownBar.startCountdown(20 /** 60*/ * 5);//15);
+        this.countdownBar.startCountdown(20 /** 60*/ * 15);
+        this.remainingPlayersBar.hide();
 
         // Example, try sending vanilla packets where you need to e.g. updating GameProfile
         /*
@@ -240,6 +241,9 @@ public class InfectionController {
      *
      */
     public void infectPlayer() {
+        if(!started) {
+            return;
+        }
         var players = server.getPlayerList().getPlayers().stream().filter(player -> player.getTeam() == speedRunnerTeam).toList();
         if(players.size() == 0) {
             return;
@@ -285,5 +289,11 @@ public class InfectionController {
                 emitSkinChange(player);
             }
         }
+    }
+
+    public void startInfection() {
+        started = true;
+        infectPlayer();
+        this.remainingPlayersBar.show();
     }
 }

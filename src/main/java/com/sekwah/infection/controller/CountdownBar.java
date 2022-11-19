@@ -68,7 +68,7 @@ public class CountdownBar {
         if(currentTime == maxTime) {
             customBar.setVisible(false);
             customBar.removeAllPlayers();
-            InfectionMod.infectionController.infectPlayer();
+            InfectionMod.infectionController.startInfection();
         }
         else {
             customBar.setVisible(true);

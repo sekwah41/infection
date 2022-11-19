@@ -83,11 +83,11 @@ public class InfectionCommand {
 
     public static void start(CommandContext<CommandSourceStack> ctx) {
         sendInfectionMessage(ctx, Component.literal("Infection countdown started!").withStyle(GREEN));
-        InfectionMod.infectionController.start();
+        InfectionMod.infectionController.startCountdown();
     }
 
     public static void infect(CommandContext<CommandSourceStack> ctx) {
-        sendInfectionMessage(ctx, Component.literal("A player will be infected shortly").withStyle(GREEN));
+        sendInfectionMessage(ctx, Component.literal("A player will be infected.").withStyle(GREEN));
         try {
             InfectionMod.infectionController.infectPlayer(ctx.getSource().getPlayerOrException());
         } catch (CommandSyntaxException e) {
