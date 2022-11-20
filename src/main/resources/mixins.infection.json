@@ -5,9 +5,10 @@
   "mixins": [
   ],
   "server": [
+    "TestCommandDisableMixin",
+    "FoodDataMixin",
     "PlayerMixin",
-    "ServerPlayerMixin",
-    "FoodDataMixin"
+    "ServerPlayerMixin"
   ],
   "client": [
   ],

@@ -26,8 +26,7 @@ import net.minecraft.world.scores.Team;
 import java.util.*;
 
 import static com.sekwah.infection.commands.InfectionCommand.text;
-import static net.minecraft.ChatFormatting.AQUA;
-import static net.minecraft.ChatFormatting.GOLD;
+import static net.minecraft.ChatFormatting.*;
 
 /**
  * Will handle the boss bars as well as any countdowns until more players getting infected
@@ -146,6 +145,9 @@ public class InfectionController {
                 bolt.setVisualOnly(true);
                 infected.level.addFreshEntity(bolt);
             }
+            infected.connection.send(new ClientboundSetTitlesAnimationPacket(10, 20, 10));
+            infected.connection.send(new ClientboundSetSubtitleTextPacket(Component.literal("Now kill the others!")));
+            infected.connection.send(new ClientboundSetTitleTextPacket(Component.literal("Infected").withStyle(RED)));
             scoreboard.addPlayerToTeam(infected.getGameProfile().getName(), infectedTeam);
             switchSkin(infected);
         }
@@ -201,19 +203,18 @@ public class InfectionController {
     public void startCountdown() {
         started = false;
         setupPlayers();
-        this.countdownBar.startCountdown(20 /** 60*/ * 15);
+
+        var countdown = config.countdown;
+
+        this.countdownBar.startCountdown(20 /** 60*/ * countdown);
         this.remainingPlayersBar.hide();
 
+        var playerList = server.getPlayerList();
+
         // Example, try sending vanilla packets where you need to e.g. updating GameProfile
-        /*
-        server.getPlayerList().broadcastAll();
-        server.getPlayerList().getPlayers().forEach(player -> {
-            player.connection.send(new ClientboundSetTitlesPacket(20, 20 * 7, 20));
-            player.connection.send(new ClientboundSetTitlesPacket(ClientboundSetTitlesPacket.Type.TITLE,
-                    Component.literal("Infection").withStyle(ChatFormatting.RED)
-                            .append(Component.literal(" vs ").withStyle(ChatFormatting.WHITE))
-                            .append(Component.literal("Speedrunners").withStyle(ChatFormatting.GREEN))));
-        });*/
+        playerList.broadcastAll(new ClientboundSetTitlesAnimationPacket(20, 20 * 4, 20));
+        playerList.broadcastAll(new ClientboundSetSubtitleTextPacket(Component.literal("You have " + countdown + " seconds, start running!")));
+        playerList.broadcastAll(new ClientboundSetTitleTextPacket(Component.literal("Infection").withStyle(GREEN)));
     }
 
 
@@ -231,6 +232,7 @@ public class InfectionController {
                 scoreboard.addPlayerToTeam(player.getGameProfile().getName(), speedRunnerTeam);
                 revertSkin(player);
                 player.clearFire();
+                player.getInventory().clearContent();
                 //player.inventory.clearContent();
                 player.heal(100);
                 var foodData = player.getFoodData();

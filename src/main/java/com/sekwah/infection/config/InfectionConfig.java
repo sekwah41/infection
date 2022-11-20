@@ -8,5 +8,5 @@ import me.shedaniel.autoconfig.annotation.Config;
 public class InfectionConfig implements ConfigData {
 
     public int compassAccuracy = 64;
-
+    public int countdown = 15;
 }
