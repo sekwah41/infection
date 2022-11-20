@@ -37,6 +37,7 @@ public class InfectionController {
 
     public final CustomBossEvents bossevents;
     public final InfectionConfigController configController;
+    public final InfectedInventoryController inventoryController;
     public PlayerTeam speedRunnerTeam;
     public PlayerTeam infectedTeam;
 
@@ -65,6 +66,7 @@ public class InfectionController {
         this.bossevents = server.getCustomBossEvents();
 
         this.configController = new InfectionConfigController();
+        this.inventoryController = new InfectedInventoryController();
     }
 
     public boolean hasStarted() {
@@ -157,7 +159,8 @@ public class InfectionController {
      * @param infected
      */
     public void infectPlayer(ServerPlayer infected) {
-        if(infected.getTeam() != adminTeam){
+        if(infected.getTeam() != adminTeam && infected.getTeam() != infectedTeam) {
+            this.inventoryController.handleItems(infected);
             if(infected.getTeam().equals(speedRunnerTeam)) {
                 LightningBolt bolt = EntityType.LIGHTNING_BOLT.create(infected.level);
                 bolt.setPos(infected.getX(), infected.getY(), infected.getZ());
@@ -226,7 +229,7 @@ public class InfectionController {
 
         var countdown = configController.getConfig().countdown;
 
-        this.countdownBar.startCountdown(20 /** 60*/ * countdown);
+        this.countdownBar.startCountdown(20 * countdown);
         this.remainingPlayersBar.hide();
 
         var playerList = server.getPlayerList();

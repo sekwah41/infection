@@ -35,10 +35,9 @@ public class InfectionMod implements DedicatedServerModInitializer {
             infectionController.tick();
         });
 
-        /*ServerPlayerEvents.AFTER_RESPAWN.register((oldPlayer, newPlayer, alive) -> {
-            // Just ensure they are on the right team
-            infectionController.infectPlayer(newPlayer);
-        });*/
+        ServerPlayerEvents.AFTER_RESPAWN.register((oldPlayer, newPlayer, alive) -> {
+            infectionController.inventoryController.handleItems(newPlayer);
+        });
     }
 
     public static InfectionConfig getConfig() {
