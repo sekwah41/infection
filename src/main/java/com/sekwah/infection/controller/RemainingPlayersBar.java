@@ -74,6 +74,10 @@ public class RemainingPlayersBar {
 
         customBar.setName(Component.literal("Speed-runners Remaining").withStyle(colour));
 
+        if(speedrunners == 0) {
+            InfectionMod.infectionController.endGame(false);
+        }
+
         // TODO add code for when the last survior dies (use wither death)
         // TODO add a sound for when the infection gets stronger
     }

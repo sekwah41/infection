@@ -13,12 +13,18 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.bossevents.CustomBossEvents;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.players.UserWhiteListEntry;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.sounds.SoundSource;
+import net.minecraft.world.effect.MobEffectInstance;
+import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LightningBolt;
 import net.minecraft.world.level.biome.BiomeManager;
 import net.minecraft.world.scores.PlayerTeam;
 import net.minecraft.world.scores.Scoreboard;
 import net.minecraft.world.scores.Team;
+import org.apache.logging.log4j.core.jmx.Server;
+
 import java.util.*;
 
 import static com.sekwah.infection.commands.InfectionCommand.text;
@@ -51,6 +57,7 @@ public class InfectionController {
     public UUID firstInfected = null;
 
     private boolean started = false;
+    private boolean gameOver = false;
 
     public InfectionController(MinecraftServer server) {
         this.server = server;
@@ -91,8 +98,19 @@ public class InfectionController {
      * Handle logic and timers that are needed and not event based
      */
     public void tick() {
+        if(gameOver) {
+            return;
+        }
         countdownBar.tick();
         remainingPlayersBar.tick();
+
+        for (ServerPlayer player : server.getPlayerList().getPlayers()) {
+            if(player.getTeam() == infectedTeam) {
+                if(!player.hasEffect(MobEffects.HUNGER)) {
+                    player.addEffect(new MobEffectInstance(MobEffects.HUNGER, Integer.MAX_VALUE, 1, false, false));
+                }
+            }
+        }
     }
 
     /**
@@ -203,6 +221,7 @@ public class InfectionController {
 
     public void startCountdown() {
         started = false;
+        gameOver = false;
         setupPlayers();
 
         var countdown = configController.getConfig().countdown;
@@ -232,6 +251,7 @@ public class InfectionController {
             if(player.getTeam() != adminTeam) {
                 scoreboard.addPlayerToTeam(player.getGameProfile().getName(), speedRunnerTeam);
                 revertSkin(player);
+                player.removeAllEffects();
                 player.clearFire();
                 player.getInventory().clearContent();
                 //player.inventory.clearContent();
@@ -309,5 +329,27 @@ public class InfectionController {
         started = true;
         infectPlayer();
         this.remainingPlayersBar.show();
+    }
+
+
+    public void endGame(boolean speedRunnersWin) {
+        gameOver = true;
+
+        this.remainingPlayersBar.hide();
+
+        var playerList = server.getPlayerList();
+        if(speedRunnersWin) {
+            playerList.broadcastAll(new ClientboundSetTitlesAnimationPacket(20, 20 * 4, 20));
+            playerList.broadcastAll(new ClientboundSetSubtitleTextPacket(Component.literal("The dragon is dead!")));
+            playerList.broadcastAll(new ClientboundSetTitleTextPacket(Component.literal("Speed-runners Win!").withStyle(GREEN)));
+        } else {
+            playerList.broadcastAll(new ClientboundSetTitlesAnimationPacket(20, 20 * 4, 20));
+            playerList.broadcastAll(new ClientboundSetSubtitleTextPacket(Component.literal("All players have been infected!")));
+            playerList.broadcastAll(new ClientboundSetTitleTextPacket(Component.literal("Infection Wins!").withStyle(RED)));
+            for(ServerPlayer player : server.getPlayerList().getPlayers()) {
+                player.playNotifySound(SoundEvents.WITHER_DEATH, SoundSource.MASTER, Float.MAX_VALUE, 1.0f);
+            }
+        }
+
     }
 }
