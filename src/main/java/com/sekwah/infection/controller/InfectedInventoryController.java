@@ -18,4 +18,12 @@ public class InfectedInventoryController {
         }
 
     }
+
+    /**
+     * Resends the inventory to the player in case of desync e.g. cancelling drops.
+     * @param serverPlayer
+     */
+    public void resendInventory(ServerPlayer serverPlayer) {
+        serverPlayer.inventoryMenu.sendAllDataToRemote();
+    }
 }
