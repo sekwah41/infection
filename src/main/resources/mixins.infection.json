@@ -5,11 +5,12 @@
   "mixins": [
   ],
   "server": [
-    "FoodDataMixin",
+    "ServerPlayerMixin",
+    "PlayerListMixin",
     "FoodDataAccessor",
+    "FoodDataMixin",
     "InfectedNoTargetMixin",
     "PlayerMixin",
-    "ServerPlayerMixin",
     "TestCommandDisableMixin"
   ],
   "client": [
