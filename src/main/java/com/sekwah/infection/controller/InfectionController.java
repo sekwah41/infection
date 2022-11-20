@@ -2,10 +2,7 @@ package com.sekwah.infection.controller;
 
 import com.mojang.authlib.properties.Property;
 import com.sekwah.infection.InfectionMod;
-import com.sekwah.infection.config.InfectionConfig;
-import com.sekwah.infection.mixin.FoodDataMixin;
-import me.shedaniel.autoconfig.AutoConfig;
-import me.shedaniel.autoconfig.ConfigHolder;
+import com.sekwah.infection.mixin.FoodDataAccessor;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
@@ -22,7 +19,6 @@ import net.minecraft.world.level.biome.BiomeManager;
 import net.minecraft.world.scores.PlayerTeam;
 import net.minecraft.world.scores.Scoreboard;
 import net.minecraft.world.scores.Team;
-
 import java.util.*;
 
 import static com.sekwah.infection.commands.InfectionCommand.text;
@@ -34,6 +30,7 @@ import static net.minecraft.ChatFormatting.*;
 public class InfectionController {
 
     public final CustomBossEvents bossevents;
+    public final InfectionConfigController configController;
     public PlayerTeam speedRunnerTeam;
     public PlayerTeam infectedTeam;
 
@@ -51,9 +48,7 @@ public class InfectionController {
     private CountdownBar countdownBar;
     private RemainingPlayersBar remainingPlayersBar;
 
-
-    private static final ConfigHolder<InfectionConfig> configHolder = AutoConfig.getConfigHolder(InfectionConfig.class);
-    private static final InfectionConfig config = configHolder.getConfig();
+    public UUID firstInfected = null;
 
     private boolean started = false;
 
@@ -61,6 +56,12 @@ public class InfectionController {
         this.server = server;
         this.scoreboard = server.getScoreboard();
         this.bossevents = server.getCustomBossEvents();
+
+        this.configController = new InfectionConfigController();
+    }
+
+    public boolean hasStarted() {
+        return started;
     }
 
     public void init() {
@@ -146,7 +147,7 @@ public class InfectionController {
                 infected.level.addFreshEntity(bolt);
             }
             infected.connection.send(new ClientboundSetTitlesAnimationPacket(10, 20, 10));
-            infected.connection.send(new ClientboundSetSubtitleTextPacket(Component.literal("Now kill the others!")));
+            infected.connection.send(new ClientboundSetSubtitleTextPacket(Component.literal("Now, kill the others!")));
             infected.connection.send(new ClientboundSetTitleTextPacket(Component.literal("Infected").withStyle(RED)));
             scoreboard.addPlayerToTeam(infected.getGameProfile().getName(), infectedTeam);
             switchSkin(infected);
@@ -204,7 +205,7 @@ public class InfectionController {
         started = false;
         setupPlayers();
 
-        var countdown = config.countdown;
+        var countdown = configController.getConfig().countdown;
 
         this.countdownBar.startCountdown(20 /** 60*/ * countdown);
         this.remainingPlayersBar.hide();
@@ -235,15 +236,19 @@ public class InfectionController {
                 player.getInventory().clearContent();
                 //player.inventory.clearContent();
                 player.heal(100);
-                var foodData = player.getFoodData();
-                FoodDataMixin foodDataAccessor = (FoodDataMixin) player.getFoodData();
-                foodData.setFoodLevel(20);
-                foodDataAccessor.setSaturationLevel(5);
-                foodDataAccessor.setExhaustionLevel(0);
-                foodDataAccessor.setLastFoodLevel(20);
-                foodDataAccessor.setTickTimer(0);
+                resetHunger(player);
             }
         }
+    }
+
+    public void resetHunger(ServerPlayer player) {
+        var foodData = player.getFoodData();
+        FoodDataAccessor foodDataAccessor = (FoodDataAccessor) foodData;
+        foodData.setFoodLevel(20);
+        foodData.setSaturation(5);
+        foodData.setExhaustion(0);
+        foodDataAccessor.setLastFoodLevel(20);
+        foodDataAccessor.setTickTimer(0);
     }
 
     /** infect a random player
@@ -259,9 +264,9 @@ public class InfectionController {
         }
         var random = new Random();
         var player = players.get(random.nextInt(players.size()));
-        if(player.getTeam() != adminTeam) {
-            this.infectPlayer(player);
-        }
+        InfectionMod.infectionController.firstInfected = player.getUUID();
+        this.infectPlayer(player);
+        resetHunger(player);
     }
 
     public Map<UUID, Property> originalSkins = new HashMap<>();

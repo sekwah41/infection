@@ -1,12 +1,8 @@
 package com.sekwah.infection.config;
 
-
-import me.shedaniel.autoconfig.ConfigData;
-import me.shedaniel.autoconfig.annotation.Config;
-
-@Config(name="infection")
-public class InfectionConfig implements ConfigData {
-
+public class InfectionConfig {
     public int compassAccuracy = 64;
     public int countdown = 15;
+    public int infection_heal_delay = 8 * 20;
+    public int infection_heal_speed = 20;
 }

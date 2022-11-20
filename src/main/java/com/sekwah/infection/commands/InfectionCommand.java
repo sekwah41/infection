@@ -39,6 +39,7 @@ public class InfectionCommand {
                         case "infect" -> infect(ctx);
                         case "lock" -> lock(ctx);
                         case "unlock" -> unlock(ctx);
+                        case "reload" -> reload(ctx);
                         case "stop" -> stop(ctx);
                         case "start" -> start(ctx);
                         default -> unrecognised(ctx, subCommand);
@@ -58,6 +59,11 @@ public class InfectionCommand {
     public static void shownames(CommandContext<CommandSourceStack> ctx) {
         sendInfectionMessage(ctx, Component.literal("Showing speedrunner names").withStyle(GREEN));
         InfectionMod.infectionController.setRunnerNamesVisible(true);
+    }
+
+    public static void reload(CommandContext<CommandSourceStack> ctx) {
+        sendInfectionMessage(ctx, Component.literal("Reloading config").withStyle(GREEN));
+        InfectionMod.infectionController.configController.loadConfig();
     }
 
 
