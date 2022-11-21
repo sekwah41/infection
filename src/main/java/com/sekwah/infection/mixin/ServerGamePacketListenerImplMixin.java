@@ -12,6 +12,6 @@ public class ServerGamePacketListenerImplMixin {
 
     @Inject(method = "handlePickItem", at = @At("HEAD"), cancellable = true)
     public void handlePickItem(ServerboundPickItemPacket packet, CallbackInfo ci) {
-
+        ci.cancel();
     }
 }
