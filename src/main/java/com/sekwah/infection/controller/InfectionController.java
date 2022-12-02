@@ -109,7 +109,7 @@ public class InfectionController {
         for (ServerPlayer player : server.getPlayerList().getPlayers()) {
             if(player.getTeam() == infectedTeam) {
                 if(!player.hasEffect(MobEffects.HUNGER)) {
-                    player.addEffect(new MobEffectInstance(MobEffects.HUNGER, Integer.MAX_VALUE, 1, false, false));
+                    player.addEffect(new MobEffectInstance(MobEffects.HUNGER, Integer.MAX_VALUE, 0, false, false ));
                 }
             }
         }

@@ -7,6 +7,9 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 
 public class InfectedInventoryController {
+
+    private int infectionStage = 0;
+
     public void handleItems(ServerPlayer player) {
         var inventory = player.getInventory();
         inventory.clearContent();
@@ -17,6 +20,10 @@ public class InfectedInventoryController {
             inventory.setItem(0, new ItemStack(Items.IRON_SWORD));
         }
 
+    }
+
+    public int getInfectionStage() {
+        return infectionStage;
     }
 
     /**

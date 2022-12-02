@@ -19,7 +19,7 @@ import static net.minecraft.commands.Commands.literal;
 
 public class InfectionCommand {
 
-    private static final String[] SUB_COMMANDS = new String[]{"infect", "start", "shownames", "hidenames", "lock", "unlock"};
+    private static final String[] SUB_COMMANDS = new String[]{"infect", "start", "shownames", "hidenames", "reload", "lock", "unlock"};
 
     private static SuggestionProvider<CommandSourceStack> SUB_COMMAND_SUGGESTIONS = (ctx, builder)
             -> SharedSuggestionProvider.suggest(SUB_COMMANDS, builder);
