@@ -3,10 +3,11 @@
   "package": "com.sekwah.infection.mixin",
   "compatibilityLevel": "JAVA_16",
   "mixins": [
-    "InventoryMixin",
-    "ServerGamePacketListenerImplMixin"
   ],
   "server": [
+    "AbstractContainerMenuMixin",
+    "InventoryMixin",
+    "ServerGamePacketListenerImplMixin",
     "FoodDataAccessor",
     "FoodDataMixin",
     "InfectedNoTargetMixin",
