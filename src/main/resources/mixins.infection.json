@@ -5,14 +5,15 @@
   "mixins": [
   ],
   "server": [
+    "EnderDragonPhaseManagerMixin",
     "AbstractContainerMenuMixin",
-    "InventoryMixin",
-    "ServerGamePacketListenerImplMixin",
     "FoodDataAccessor",
     "FoodDataMixin",
     "InfectedNoTargetMixin",
+    "InventoryMixin",
     "PlayerListMixin",
     "PlayerMixin",
+    "ServerGamePacketListenerImplMixin",
     "ServerPlayerMixin",
     "TestCommandDisableMixin"
   ],

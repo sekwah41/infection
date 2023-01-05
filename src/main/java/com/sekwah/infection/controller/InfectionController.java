@@ -156,22 +156,22 @@ public class InfectionController {
 
     /**
      * If a player is killed
-     * @param infected
+     * @param player the player to infect
      */
-    public void infectPlayer(ServerPlayer infected) {
-        if(infected.getTeam() != adminTeam && infected.getTeam() != infectedTeam) {
-            this.inventoryController.handleItems(infected);
-            if(infected.getTeam().equals(speedRunnerTeam)) {
-                LightningBolt bolt = EntityType.LIGHTNING_BOLT.create(infected.level);
-                bolt.setPos(infected.getX(), infected.getY(), infected.getZ());
+    public void infectPlayer(ServerPlayer player) {
+        if(player.getTeam() != adminTeam && player.getTeam() != infectedTeam) {
+            this.inventoryController.handleItems(player);
+            if(Objects.equals(player.getTeam(), speedRunnerTeam)) {
+                LightningBolt bolt = EntityType.LIGHTNING_BOLT.create(player.level);
+                bolt.setPos(player.getX(), player.getY(), player.getZ());
                 bolt.setVisualOnly(true);
-                infected.level.addFreshEntity(bolt);
+                player.level.addFreshEntity(bolt);
             }
-            infected.connection.send(new ClientboundSetTitlesAnimationPacket(10, 20, 10));
-            infected.connection.send(new ClientboundSetSubtitleTextPacket(Component.literal("Now, kill the others!")));
-            infected.connection.send(new ClientboundSetTitleTextPacket(Component.literal("Infected").withStyle(RED)));
-            scoreboard.addPlayerToTeam(infected.getGameProfile().getName(), infectedTeam);
-            switchSkin(infected);
+            player.connection.send(new ClientboundSetTitlesAnimationPacket(10, 20, 10));
+            player.connection.send(new ClientboundSetSubtitleTextPacket(Component.literal("Now, kill the others!")));
+            player.connection.send(new ClientboundSetTitleTextPacket(Component.literal("Infected").withStyle(RED)));
+            scoreboard.addPlayerToTeam(player.getGameProfile().getName(), infectedTeam);
+            switchSkin(player);
         }
     }
 
@@ -330,12 +330,22 @@ public class InfectionController {
 
     public void startInfection() {
         started = true;
-        infectPlayer();
+
+        var players = server.getPlayerList().getPlayers().stream().filter(player -> player.getTeam() == speedRunnerTeam).toList();
+        // TODO remove this, it shouldn't cause a problem in production though it'll help for testing win conditions alone.
+        if(players.size() != 1) {
+            infectPlayer();
+        }
         this.remainingPlayersBar.show();
     }
 
 
     public void endGame(boolean speedRunnersWin) {
+        // Stops the win screen being shown if the game already was won!
+        if(gameOver) {
+            System.out.println("Game already over: speedRunnersWin" + speedRunnersWin);
+            return;
+        }
         gameOver = true;
 
         this.remainingPlayersBar.hide();
