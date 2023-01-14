@@ -180,15 +180,17 @@ public class InfectionController {
         server.getPlayerList().broadcastAll(new ClientboundPlayerInfoPacket(ClientboundPlayerInfoPacket.Action.ADD_PLAYER, infected));
         var level = infected.getLevel();
 
-        infected.connection.send(new ClientboundRespawnPacket(level.dimensionTypeId(),
-                level.dimension(),
-                BiomeManager.obfuscateSeed(level.getSeed()),
-                infected.gameMode.getGameModeForPlayer(),
-                infected.gameMode.getPreviousGameModeForPlayer(),
-                level.isDebug(),
-                level.isFlat(),
-                true,
-                infected.getLastDeathLocation()));
+        if(!infected.isDeadOrDying()) {
+            infected.connection.send(new ClientboundRespawnPacket(level.dimensionTypeId(),
+                    level.dimension(),
+                    BiomeManager.obfuscateSeed(level.getSeed()),
+                    infected.gameMode.getGameModeForPlayer(),
+                    infected.gameMode.getPreviousGameModeForPlayer(),
+                    level.isDebug(),
+                    level.isFlat(),
+                    true,
+                    infected.getLastDeathLocation()));
+        }
 
         broadcastToAllBut(infected, new ClientboundRemoveEntitiesPacket(infected.getId()));
         broadcastToAllBut(infected, new ClientboundAddPlayerPacket(infected));
