@@ -19,11 +19,11 @@ import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LightningBolt;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.biome.BiomeManager;
 import net.minecraft.world.scores.PlayerTeam;
 import net.minecraft.world.scores.Scoreboard;
 import net.minecraft.world.scores.Team;
-import org.apache.logging.log4j.core.jmx.Server;
 
 import java.util.*;
 
@@ -42,6 +42,9 @@ public class InfectionController {
     public PlayerTeam infectedTeam;
 
     public PlayerTeam adminTeam;
+
+    final int START_BORDER_SIZE = 50;
+    final int END_BORDER_SIZE = 10000;
 
     String INFECTED = "infected";
     String SPEEDRUNNER = "speedrunner";
@@ -122,10 +125,6 @@ public class InfectionController {
         var whitelist = server.getPlayerList().getWhiteList();
         for(ServerPlayer player : server.getPlayerList().getPlayers()) {
             whitelist.add(new UserWhiteListEntry(player.getGameProfile()));
-            if(player.getTeam() != adminTeam) {
-                scoreboard.addPlayerToTeam(player.getGameProfile().getName(), speedRunnerTeam);
-                revertSkin(player);
-            }
         }
         server.setEnforceWhitelist(true);
     }
@@ -229,6 +228,10 @@ public class InfectionController {
         gameOver = false;
         setupPlayers();
 
+        var worldBorder = server.overworld().getWorldBorder();
+
+        worldBorder.lerpSizeBetween(START_BORDER_SIZE, END_BORDER_SIZE, 10 * 60 * 1000);
+
         var countdown = configController.getConfig().countdown;
 
         this.countdownBar.startCountdown(20 * countdown);
@@ -240,6 +243,8 @@ public class InfectionController {
         playerList.broadcastAll(new ClientboundSetTitlesAnimationPacket(20, 20 * 4, 20));
         playerList.broadcastAll(new ClientboundSetSubtitleTextPacket(Component.literal("You have " + countdown + " seconds, start running!")));
         playerList.broadcastAll(new ClientboundSetTitleTextPacket(Component.literal("Infection").withStyle(GREEN)));
+
+        this.inventoryController.start();
     }
 
 
@@ -366,5 +371,21 @@ public class InfectionController {
             }
         }
 
+    }
+
+    public void setup() {
+        var overworld = server.getLevel(Level.OVERWORLD);
+        var worldBorder = overworld.getWorldBorder();
+        var spawnPoint = overworld.getSharedSpawnPos();
+
+        worldBorder.setCenter(spawnPoint.getX(), spawnPoint.getZ());
+
+        worldBorder.setSize(START_BORDER_SIZE);
+        for(ServerPlayer player : server.getPlayerList().getPlayers()) {
+            if(player.getTeam() != adminTeam) {
+                scoreboard.addPlayerToTeam(player.getGameProfile().getName(), speedRunnerTeam);
+                revertSkin(player);
+            }
+        }
     }
 }

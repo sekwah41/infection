@@ -19,7 +19,7 @@ import static net.minecraft.commands.Commands.literal;
 
 public class InfectionCommand {
 
-    private static final String[] SUB_COMMANDS = new String[]{"infect", "start", "shownames", "hidenames", "reload", "lock", "unlock"};
+    private static final String[] SUB_COMMANDS = new String[]{"infect", "setup", "start", "shownames", "hidenames", "reload", "lock", "unlock"};
 
     private static SuggestionProvider<CommandSourceStack> SUB_COMMAND_SUGGESTIONS = (ctx, builder)
             -> SharedSuggestionProvider.suggest(SUB_COMMANDS, builder);
@@ -41,6 +41,7 @@ public class InfectionCommand {
                         case "unlock" -> unlock(ctx);
                         case "reload" -> reload(ctx);
                         case "stop" -> stop(ctx);
+                        case "setup" -> setup(ctx);
                         case "start" -> start(ctx);
                         default -> unrecognised(ctx, subCommand);
                     }
@@ -90,6 +91,11 @@ public class InfectionCommand {
     public static void start(CommandContext<CommandSourceStack> ctx) {
         sendInfectionMessage(ctx, Component.literal("Infection countdown started!").withStyle(GREEN));
         InfectionMod.infectionController.startCountdown();
+    }
+
+    public static void setup(CommandContext<CommandSourceStack> ctx) {
+        sendInfectionMessage(ctx, Component.literal("Preparing the event.").withStyle(GREEN));
+        InfectionMod.infectionController.setup();
     }
 
     public static void infect(CommandContext<CommandSourceStack> ctx) {
