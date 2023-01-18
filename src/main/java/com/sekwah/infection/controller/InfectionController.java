@@ -176,8 +176,8 @@ public class InfectionController {
     }
 
     private void emitSkinChange(ServerPlayer infected) {
-        server.getPlayerList().broadcastAll(new ClientboundPlayerInfoPacket(ClientboundPlayerInfoPacket.Action.REMOVE_PLAYER, infected));
-        server.getPlayerList().broadcastAll(new ClientboundPlayerInfoPacket(ClientboundPlayerInfoPacket.Action.ADD_PLAYER, infected));
+        server.getPlayerList().broadcastAll(new ClientboundPlayerInfoRemovePacket(List.of(infected.getUUID())));
+        server.getPlayerList().broadcastAll(new ClientboundPlayerInfoUpdatePacket(ClientboundPlayerInfoUpdatePacket.Action.ADD_PLAYER, infected));
         var level = infected.getLevel();
 
         if(!infected.isDeadOrDying()) {
@@ -188,7 +188,7 @@ public class InfectionController {
                     infected.gameMode.getPreviousGameModeForPlayer(),
                     level.isDebug(),
                     level.isFlat(),
-                    true,
+                    (byte) 1, // used to be true, now 1 is keep everything
                     infected.getLastDeathLocation()));
         }
 

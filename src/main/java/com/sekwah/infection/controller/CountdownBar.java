@@ -60,7 +60,7 @@ public class CountdownBar {
             customBar.setValue(maxTime - currentTime);
             server.getPlayerList().getPlayers().forEach(player -> {
                 if(seconds <= 5 && seconds > 0) {
-                    player.playNotifySound(SoundEvents.NOTE_BLOCK_HAT, SoundSource.MASTER, 1.0f, 1f);
+                    player.playNotifySound(SoundEvents.NOTE_BLOCK_HAT.value(), SoundSource.MASTER, 1.0f, 1f);
                 }
             });
         }
