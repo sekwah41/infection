@@ -43,6 +43,7 @@ public class InfectionCommand {
                         case "stop" -> stop(ctx);
                         case "setup" -> setup(ctx);
                         case "start" -> start(ctx);
+                        case "upgrade" -> upgrade(ctx);
                         default -> unrecognised(ctx, subCommand);
                     }
                     return Command.SINGLE_SUCCESS;
@@ -106,6 +107,12 @@ public class InfectionCommand {
             throw new RuntimeException(e);
         }
     }
+
+    public static void upgrade(CommandContext<CommandSourceStack> ctx) {
+        sendInfectionMessage(ctx, Component.literal("Upgrading the infection equipment!").withStyle(GREEN));
+        InfectionMod.infectionController.inventoryController.upgrade();
+    }
+
 
     public static MutableComponent text(String text) {
         return Component.literal(text);

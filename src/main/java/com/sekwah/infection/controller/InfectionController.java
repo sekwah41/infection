@@ -108,6 +108,7 @@ public class InfectionController {
         }
         countdownBar.tick();
         remainingPlayersBar.tick();
+        inventoryController.tick();
 
         for (ServerPlayer player : server.getPlayerList().getPlayers()) {
             if(player.getTeam() == infectedTeam) {
