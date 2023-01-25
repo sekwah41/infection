@@ -21,9 +21,9 @@ public class TaskScheduler<T> {
     }
 
     public DelayedTickEvent<T> scheduleTickEvent(Consumer<T> consumer, int tickDelay) {
-        var task = new DelayedTickEvent<>(consumer, tickDelay);
-        tickEvents.add(task);
-        return task;
+            var task = new DelayedTickEvent<>(consumer, tickDelay);
+            tickEvents.add(task);
+            return task;
     }
 
 
@@ -39,29 +39,33 @@ public class TaskScheduler<T> {
         return task;
     }
 
-    public boolean clearTask(DelayedTickEvent<T> task, T target) {
+    public void clearTask(DelayedTickEvent<T> task, T target) {
         task.cancel(target);
-        return tickEvents.remove(task);
     }
 
     public void tick(T target) {
         Iterator<DelayedTickEvent<T>> iterator = this.tickEvents.iterator();
         while (iterator.hasNext()) {
             DelayedTickEvent<T> event = iterator.next();
-            event.tick();
-            if (event.shouldRun()) {
-                event.run(target);
-                if (!event.isInterval) {
-                    iterator.remove();
+            if(event.shouldRemove()) {
+                iterator.remove();
+            } else {
+                event.tick();
+                if (event.shouldRun()) {
+                    event.run(target);
+                    if (!event.isInterval) {
+                        iterator.remove();
+                    }
                 }
             }
         }
     }
 
     public void clearTasks(T target) {
-        for( DelayedTickEvent<T> event : this.tickEvents) {
+        Iterator<DelayedTickEvent<T>> iterator = this.tickEvents.iterator();
+        while (iterator.hasNext()) {
+            DelayedTickEvent<T> event = iterator.next();
             event.cancel(target);
         }
-        tickEvents.clear();
     }
 }

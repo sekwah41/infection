@@ -8,6 +8,8 @@ public class DelayedTickEvent<T> {
      * The only reason this is not final is that we may want to keep running it until it gets to the last stage.
      */
     public boolean isInterval;
+
+    private boolean shouldRemove = false;
     private final int maxTicks;
     private final Consumer<T> consumer;
 
@@ -41,7 +43,15 @@ public class DelayedTickEvent<T> {
         return this.ticks <= 0;
     }
 
+    public boolean shouldRemove() {
+        return this.shouldRemove;
+    }
+
     public void cancel(T target) {
+        if(this.shouldRemove) {
+            return;
+        }
+        this.shouldRemove = true;
         this.cancelConsumer.accept(target);
     }
 
