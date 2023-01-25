@@ -71,10 +71,9 @@ public class InfectedInventoryController {
             inventory.pickSlot(0);
             player.connection.send(new ClientboundSetCarriedItemPacket(0));
         }
-        // First infected starts with a better weapon
-        if (player.getUUID().equals(InfectionMod.infectionController.firstInfected)) {
-            inventory.setItem(0, infectedInventories[infectionStage].alphaWeapon.asItem().getDefaultInstance());
-        }
+        var firstInfected = player.getUUID().equals(InfectionMod.infectionController.firstInfected);
+        var primaryItem = firstInfected ? infectedInventories[infectionStage].alphaWeapon : infectedInventories[infectionStage].defaultWeapon;
+        inventory.setItem(0, primaryItem.asItem().getDefaultInstance());
 
     }
 
@@ -102,15 +101,12 @@ public class InfectedInventoryController {
         if(!upgradeAvailable()) {
             return;
         }
+        infectionStage++;
 
         for(ServerPlayer player : server.getPlayerList().getPlayers()) {
             player.playNotifySound(SoundEvents.WITHER_SPAWN, SoundSource.MASTER, Float.MAX_VALUE, 1f);
             this.handleInfectedItems(player);
         }
-
-
-
-        infectionStage++;
     }
 
     public void start() {
