@@ -36,12 +36,15 @@ public class CountdownBar {
         customBar.setColor(CustomBossEvent.BossBarColor.RED);
     }
 
-    public void startCountdown(int ticks) {
+    public void startCountdown(int seconds) {
         customBar.removeAllPlayers();
-        this.maxTime = ticks;
+        this.maxTime = seconds;
         this.currentTime = 0;
     }
 
+    /**
+     * Due to the task scheduler it'll tick every second.
+     */
     public void tick() {
         if(maxTime < currentTime) {
             return;
@@ -51,19 +54,17 @@ public class CountdownBar {
             customBar.addPlayer(player);
         });
 
-        if(currentTime % 20 == 0) {
-            int seconds = (maxTime - currentTime) / 20;
-            int mins = seconds / 60;
-            int secs = seconds % 60;
-            customBar.setName(name.copy().append(Component.literal(mins + ":" + (secs > 9 ? secs : "0" + secs)).withStyle(ChatFormatting.YELLOW)));
-            customBar.setMax(maxTime);
-            customBar.setValue(maxTime - currentTime);
-            server.getPlayerList().getPlayers().forEach(player -> {
-                if(seconds <= 5 && seconds > 0) {
-                    player.playNotifySound(SoundEvents.NOTE_BLOCK_HAT.value(), SoundSource.MASTER, 1.0f, 1f);
-                }
-            });
-        }
+        int seconds = (maxTime - currentTime);
+        int mins = seconds / 60;
+        int secs = seconds % 60;
+        customBar.setName(name.copy().append(Component.literal(mins + ":" + (secs > 9 ? secs : "0" + secs)).withStyle(ChatFormatting.YELLOW)));
+        customBar.setMax(maxTime);
+        customBar.setValue(maxTime - currentTime);
+        server.getPlayerList().getPlayers().forEach(player -> {
+            if(seconds <= 5 && seconds > 0) {
+                player.playNotifySound(SoundEvents.NOTE_BLOCK_HAT.value(), SoundSource.MASTER, 1.0f, 1f);
+            }
+        });
 
         if(currentTime == maxTime) {
             customBar.setVisible(false);

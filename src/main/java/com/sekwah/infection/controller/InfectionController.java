@@ -2,7 +2,7 @@ package com.sekwah.infection.controller;
 
 import com.mojang.authlib.properties.Property;
 import com.sekwah.infection.InfectionMod;
-import com.sekwah.infection.TaskScheduler;
+import com.sekwah.infection.scheduler.TaskScheduler;
 import com.sekwah.infection.mixin.FoodDataAccessor;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
@@ -235,18 +235,30 @@ public class InfectionController {
 
         this.serverTaskScheduler.scheduleIntervalTickEvent((server) -> {
             countdownBar.tick();
+        },20).scheduleTick();
+
+        this.serverTaskScheduler.scheduleIntervalTickEvent((server) -> {
             remainingPlayersBar.tick();
             inventoryController.tick();
-        },0);
+        },1, (server) -> {
+            this.remainingPlayersBar.hide();
+        });
 
         var worldBorder = server.overworld().getWorldBorder();
 
-        worldBorder.lerpSizeBetween(START_BORDER_SIZE, END_BORDER_SIZE, 10 * 60 * 1000);
-        worldBorder.setWarningBlocks(-100000);
+        this.serverTaskScheduler.scheduleIntervalTickEvent((server) -> {
+            var size = worldBorder.getSize();
+            if(worldBorder.getSize() < END_BORDER_SIZE) {
+                worldBorder.lerpSizeBetween(size + 2, size + 2.5, 1000);
+                //worldBorder.lerpSizeBetween(size, size + 0.5, 20 * 1000);
+            }
+        },1);
+
+        worldBorder.setSize(START_BORDER_SIZE);
 
         var countdown = configController.getConfig().countdown;
 
-        this.countdownBar.startCountdown(20 * countdown);
+        this.countdownBar.startCountdown(countdown);
         this.remainingPlayersBar.hide();
 
         var playerList = server.getPlayerList();
@@ -369,8 +381,6 @@ public class InfectionController {
 
         this.serverTaskScheduler.clearTasks(server);
 
-        this.remainingPlayersBar.hide();
-
         var playerList = server.getPlayerList();
         if(speedRunnersWin) {
             playerList.broadcastAll(new ClientboundSetTitlesAnimationPacket(20, 20 * 4, 20));
@@ -391,6 +401,8 @@ public class InfectionController {
         var overworld = server.getLevel(Level.OVERWORLD);
         var worldBorder = overworld.getWorldBorder();
         var spawnPoint = overworld.getSharedSpawnPos();
+
+        this.serverTaskScheduler.clearTasks(server);
 
         worldBorder.setWarningBlocks(0);
 

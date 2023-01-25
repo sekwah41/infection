@@ -51,4 +51,8 @@ public class DelayedTickEvent<T> {
             this.ticks = this.maxTicks;
         }
     }
+
+    public void scheduleTick() {
+        this.ticks = 0;
+    }
 }
