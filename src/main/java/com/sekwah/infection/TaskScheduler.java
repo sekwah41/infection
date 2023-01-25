@@ -16,12 +16,12 @@ import java.util.function.Consumer;
 public class TaskScheduler<T> {
     private ArrayList<DelayedTickEvent<T>> tickEvents = new ArrayList<>();
 
-    public void scheduleTickEvent(Consumer<DelayedTickEvent<T>> consumer, int tickDelay) {
-
+    public void scheduleTickEvent(Consumer<T> consumer, int tickDelay) {
+        tickEvents.add(new DelayedTickEvent<>(consumer, tickDelay));
     }
 
-    public void scheduleIntervalTickEvent(Consumer<DelayedTickEvent<T>> consumer, int tickDelay) {
-
+    public void scheduleIntervalTickEvent(Consumer<T> consumer, int tickDelay) {
+        tickEvents.add(new DelayedTickEvent<>(consumer, tickDelay, true));
     }
 
     public void tick(T target) {
@@ -38,4 +38,10 @@ public class TaskScheduler<T> {
         }
     }
 
+    public void clearTasks(T target) {
+        for( DelayedTickEvent<T> event : this.tickEvents) {
+            event.cancel(target);
+        }
+        tickEvents.clear();
+    }
 }

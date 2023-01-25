@@ -9,14 +9,24 @@ public class DelayedTickEvent<T> {
      */
     public boolean isInterval;
     private final int maxTicks;
-    public Consumer<T> consumer;
-    public int ticks;
+    private final Consumer<T> consumer;
 
-    public DelayedTickEvent(Consumer<T> consumer, int ticks, boolean isInterval) {
+    /**
+     * Code to run if the event is cancelled. E.g. resetting something.
+     */
+    private final Consumer<T> cancelConsumer;
+    private int ticks;
+
+    public DelayedTickEvent(Consumer<T> consumer, int ticks, boolean isInterval, Consumer<T> cancelConsumer) {
         this.consumer = consumer;
         this.ticks = ticks;
         this.maxTicks = ticks;
         this.isInterval = isInterval;
+        this.cancelConsumer = cancelConsumer;
+    }
+
+    public DelayedTickEvent(Consumer<T> consumer, int ticks, boolean isInterval) {
+        this(consumer, ticks, isInterval, (test) -> {});
     }
 
     public DelayedTickEvent(Consumer<T> consumer, int ticks) {
@@ -29,6 +39,10 @@ public class DelayedTickEvent<T> {
 
     public boolean shouldRun() {
         return this.ticks <= 0;
+    }
+
+    public void cancel(T target) {
+        this.cancelConsumer.accept(target);
     }
 
     public void run(T target) {

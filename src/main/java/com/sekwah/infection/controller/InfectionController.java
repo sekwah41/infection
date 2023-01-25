@@ -2,6 +2,7 @@ package com.sekwah.infection.controller;
 
 import com.mojang.authlib.properties.Property;
 import com.sekwah.infection.InfectionMod;
+import com.sekwah.infection.TaskScheduler;
 import com.sekwah.infection.mixin.FoodDataAccessor;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
@@ -58,6 +59,8 @@ public class InfectionController {
     private CountdownBar countdownBar;
     private RemainingPlayersBar remainingPlayersBar;
 
+    public TaskScheduler<MinecraftServer> serverTaskScheduler = new TaskScheduler<>();
+
     public UUID firstInfected = null;
 
     private boolean started = false;
@@ -106,9 +109,7 @@ public class InfectionController {
         if(gameOver) {
             return;
         }
-        countdownBar.tick();
-        remainingPlayersBar.tick();
-        inventoryController.tick();
+        serverTaskScheduler.tick(server);
 
         for (ServerPlayer player : server.getPlayerList().getPlayers()) {
             if(player.getTeam() == infectedTeam) {
@@ -225,9 +226,18 @@ public class InfectionController {
     }
 
     public void startCountdown() {
+        // Just in case there are any sitting around
+        this.serverTaskScheduler.clearTasks(server);
+
         started = false;
         gameOver = false;
         setupPlayers();
+
+        this.serverTaskScheduler.scheduleIntervalTickEvent((server) -> {
+            countdownBar.tick();
+            remainingPlayersBar.tick();
+            inventoryController.tick();
+        },0);
 
         var worldBorder = server.overworld().getWorldBorder();
 
@@ -356,6 +366,8 @@ public class InfectionController {
             return;
         }
         gameOver = true;
+
+        this.serverTaskScheduler.clearTasks(server);
 
         this.remainingPlayersBar.hide();
 
