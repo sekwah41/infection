@@ -31,6 +31,6 @@ public abstract class PlayerMixin {
     public void hurt(DamageSource source, float amount, CallbackInfoReturnable<Boolean> cir) {
         var foodData = (FoodDataAccessor) this.getFoodData();
         var config = InfectionMod.getConfig();
-        foodData.setTickTimer(-config.infection_heal_delay + config.infection_heal_speed);
+        foodData.setTickTimer(-config.infectionHealDelay + config.infectionHealSpeed);
     }
 }

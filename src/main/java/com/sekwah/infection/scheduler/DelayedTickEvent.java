@@ -55,4 +55,8 @@ public class DelayedTickEvent<T> {
     public void scheduleTick() {
         this.ticks = 0;
     }
+
+    public int getTicksLeft() {
+        return this.ticks;
+    }
 }

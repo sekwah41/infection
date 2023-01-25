@@ -113,8 +113,10 @@ public class InfectionController {
 
         for (ServerPlayer player : server.getPlayerList().getPlayers()) {
             if(player.getTeam() == infectedTeam) {
-                if(!player.hasEffect(MobEffects.HUNGER)) {
-                    player.addEffect(new MobEffectInstance(MobEffects.HUNGER, Integer.MAX_VALUE, 0, false, false ));
+                var effect = player.getEffect(MobEffects.HUNGER);
+                var timeLeft = Math.max(this.inventoryController.timeTillNextStage(), 19);
+                if(effect == null || effect.getDuration() <= 4 || effect.getAmplifier() != inventoryController.getInfectionStage()) {
+                    player.addEffect(new MobEffectInstance(MobEffects.HUNGER, timeLeft, inventoryController.getInfectionStage(), false, false ));
                 }
             }
         }
@@ -161,17 +163,17 @@ public class InfectionController {
      */
     public void infectPlayer(ServerPlayer player) {
         if(player.getTeam() != adminTeam && player.getTeam() != infectedTeam) {
-            this.inventoryController.handleItems(player);
             if(Objects.equals(player.getTeam(), speedRunnerTeam)) {
                 LightningBolt bolt = EntityType.LIGHTNING_BOLT.create(player.level);
                 bolt.setPos(player.getX(), player.getY(), player.getZ());
                 bolt.setVisualOnly(true);
                 player.level.addFreshEntity(bolt);
             }
+            scoreboard.addPlayerToTeam(player.getGameProfile().getName(), infectedTeam);
+            this.inventoryController.handleInfectedItems(player, true);
             player.connection.send(new ClientboundSetTitlesAnimationPacket(10, 20, 10));
             player.connection.send(new ClientboundSetSubtitleTextPacket(Component.literal("Now, kill the others!")));
             player.connection.send(new ClientboundSetTitleTextPacket(Component.literal("Infected").withStyle(RED)));
-            scoreboard.addPlayerToTeam(player.getGameProfile().getName(), infectedTeam);
             switchSkin(player);
         }
     }
@@ -244,6 +246,8 @@ public class InfectionController {
             this.remainingPlayersBar.hide();
         });
 
+        this.inventoryController.register();
+
         var worldBorder = server.overworld().getWorldBorder();
 
         this.serverTaskScheduler.scheduleIntervalTickEvent((server) -> {
@@ -267,8 +271,6 @@ public class InfectionController {
         playerList.broadcastAll(new ClientboundSetTitlesAnimationPacket(20, 20 * 4, 20));
         playerList.broadcastAll(new ClientboundSetSubtitleTextPacket(Component.literal("You have " + countdown + " seconds, start running!")));
         playerList.broadcastAll(new ClientboundSetTitleTextPacket(Component.literal("Infection").withStyle(GREEN)));
-
-        this.inventoryController.start();
     }
 
 

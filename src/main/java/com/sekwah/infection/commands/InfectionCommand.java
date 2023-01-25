@@ -110,7 +110,7 @@ public class InfectionCommand {
 
     public static void upgrade(CommandContext<CommandSourceStack> ctx) {
         sendInfectionMessage(ctx, Component.literal("Upgrading the infection equipment!").withStyle(GREEN));
-        InfectionMod.infectionController.inventoryController.upgrade();
+        InfectionMod.infectionController.inventoryController.upgrade(ctx.getSource().getServer());
     }
 
 

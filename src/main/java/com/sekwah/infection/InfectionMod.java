@@ -8,7 +8,6 @@ import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import net.fabricmc.fabric.api.entity.event.v1.ServerPlayerEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
-import net.minecraft.server.network.ServerPlayerConnection;
 
 /**
  * This mod should be server side only and designed to work with vanilla clients.
@@ -36,7 +35,7 @@ public class InfectionMod implements DedicatedServerModInitializer {
         });
 
         ServerPlayerEvents.AFTER_RESPAWN.register((oldPlayer, newPlayer, alive) -> {
-            infectionController.inventoryController.handleItems(newPlayer);
+            infectionController.inventoryController.handleInfectedItems(newPlayer);
         });
     }
 
