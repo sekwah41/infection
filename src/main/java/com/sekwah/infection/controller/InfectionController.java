@@ -232,6 +232,7 @@ public class InfectionController {
         var worldBorder = server.overworld().getWorldBorder();
 
         worldBorder.lerpSizeBetween(START_BORDER_SIZE, END_BORDER_SIZE, 10 * 60 * 1000);
+        worldBorder.setWarningBlocks(-100000);
 
         var countdown = configController.getConfig().countdown;
 
@@ -378,6 +379,8 @@ public class InfectionController {
         var overworld = server.getLevel(Level.OVERWORLD);
         var worldBorder = overworld.getWorldBorder();
         var spawnPoint = overworld.getSharedSpawnPos();
+
+        worldBorder.setWarningBlocks(0);
 
         worldBorder.setCenter(spawnPoint.getX(), spawnPoint.getZ());
 
