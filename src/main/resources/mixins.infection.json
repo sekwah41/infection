@@ -5,8 +5,8 @@
   "mixins": [
   ],
   "server": [
-    "EnderDragonPhaseManagerMixin",
     "AbstractContainerMenuMixin",
+    "EnderDragonPhaseManagerMixin",
     "FoodDataAccessor",
     "FoodDataMixin",
     "InfectedNoTargetMixin",
@@ -15,7 +15,8 @@
     "PlayerMixin",
     "ServerGamePacketListenerImplMixin",
     "ServerPlayerMixin",
-    "TestCommandDisableMixin"
+    "TestCommandDisableMixin",
+    "PlayerAccessor"
   ],
   "client": [
   ],

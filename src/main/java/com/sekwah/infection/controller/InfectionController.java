@@ -2,6 +2,7 @@ package com.sekwah.infection.controller;
 
 import com.mojang.authlib.properties.Property;
 import com.sekwah.infection.InfectionMod;
+import com.sekwah.infection.mixin.PlayerAccessor;
 import com.sekwah.infection.scheduler.TaskScheduler;
 import com.sekwah.infection.mixin.FoodDataAccessor;
 import net.minecraft.ChatFormatting;
@@ -178,30 +179,34 @@ public class InfectionController {
         }
     }
 
-    private void emitSkinChange(ServerPlayer infected) {
-        server.getPlayerList().broadcastAll(new ClientboundPlayerInfoRemovePacket(List.of(infected.getUUID())));
-        server.getPlayerList().broadcastAll(new ClientboundPlayerInfoUpdatePacket(ClientboundPlayerInfoUpdatePacket.Action.ADD_PLAYER, infected));
-        var level = infected.getLevel();
+    private void emitSkinChange(ServerPlayer player) {
+        server.getPlayerList().broadcastAll(new ClientboundPlayerInfoRemovePacket(List.of(player.getUUID())));
+        server.getPlayerList().broadcastAll(new ClientboundPlayerInfoUpdatePacket(ClientboundPlayerInfoUpdatePacket.Action.ADD_PLAYER, player));
+        var level = player.getLevel();
 
-        if(!infected.isDeadOrDying()) {
-            infected.connection.send(new ClientboundRespawnPacket(level.dimensionTypeId(),
+        if(!player.isDeadOrDying()) {
+            player.connection.send(new ClientboundRespawnPacket(level.dimensionTypeId(),
                     level.dimension(),
                     BiomeManager.obfuscateSeed(level.getSeed()),
-                    infected.gameMode.getGameModeForPlayer(),
-                    infected.gameMode.getPreviousGameModeForPlayer(),
+                    player.gameMode.getGameModeForPlayer(),
+                    player.gameMode.getPreviousGameModeForPlayer(),
                     level.isDebug(),
                     level.isFlat(),
                     (byte) 1, // used to be true, now 1 is keep everything
-                    infected.getLastDeathLocation()));
+                    player.getLastDeathLocation()));
         }
 
-        broadcastToAllBut(infected, new ClientboundRemoveEntitiesPacket(infected.getId()));
-        broadcastToAllBut(infected, new ClientboundAddPlayerPacket(infected));
+        broadcastToAllBut(player, new ClientboundRemoveEntitiesPacket(player.getId()));
+        broadcastToAllBut(player, new ClientboundAddPlayerPacket(player));
 
 
-        infected.connection.send(new ClientboundPlayerPositionPacket(infected.getX(), infected.getY(), infected.getZ(), infected.getYRot(), infected.getXRot(), Collections.emptySet(), 0, false));
-        infected.connection.send(new ClientboundSetCarriedItemPacket(infected.getInventory().selected));
-        infected.inventoryMenu.sendAllDataToRemote();
+        player.connection.send(new ClientboundPlayerPositionPacket(player.getX(), player.getY(), player.getZ(), player.getYRot(), player.getXRot(), Collections.emptySet(), 0, false));
+        player.connection.send(new ClientboundSetCarriedItemPacket(player.getInventory().selected));
+        player.inventoryMenu.sendAllDataToRemote();
+        var entityData = player.getEntityData();
+        var customisationData = entityData.get(PlayerAccessor.getDataPlayerCustomisation());
+        entityData.set(PlayerAccessor.getDataPlayerCustomisation(), (byte) 0);
+        entityData.set(PlayerAccessor.getDataPlayerCustomisation(), customisationData);
     }
 
     private void broadcastToAllBut(ServerPlayer player, Packet packet) {
@@ -311,7 +316,7 @@ public class InfectionController {
      *
      */
     public void infectPlayer() {
-        if(!started) {
+        if(!started || gameOver) {
             return;
         }
         var players = server.getPlayerList().getPlayers().stream().filter(player -> player.getTeam() == speedRunnerTeam).toList();
