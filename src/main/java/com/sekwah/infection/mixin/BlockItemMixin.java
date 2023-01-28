@@ -4,7 +4,9 @@ import com.sekwah.infection.InfectionMod;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 import net.minecraft.world.item.context.BlockPlaceContext;
+import net.minecraft.world.level.block.Blocks;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -14,7 +16,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 public class BlockItemMixin {
 
     @Inject(method = "place", at = @At("TAIL"))
-    private void place(BlockPlaceContext context, CallbackInfoReturnable<InteractionResult> cir) {
+    private void placeInfinite(BlockPlaceContext context, CallbackInfoReturnable<InteractionResult> cir) {
         var player = context.getPlayer();
         if(player != null && player.getTeam() == InfectionMod.infectionController.infectedTeam) {
             ItemStack itemStack = context.getItemInHand();
@@ -22,4 +24,5 @@ public class BlockItemMixin {
             context.getPlayer().inventoryMenu.sendAllDataToRemote();
         }
     }
+
 }

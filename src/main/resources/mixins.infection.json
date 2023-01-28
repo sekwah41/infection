@@ -7,6 +7,8 @@
   "server": [
     "AbstractContainerMenuMixin",
     "BlockItemMixin",
+    "CompassItemAccessor",
+    "CompassItemMixin",
     "EnderDragonPhaseManagerMixin",
     "FoodDataAccessor",
     "FoodDataMixin",
@@ -18,8 +20,7 @@
     "ServerGamePacketListenerImplMixin",
     "ServerPlayerMixin",
     "TestCommandDisableMixin",
-    "CompassItemAccessor",
-    "CompassItemMixin"
+    "BucketItemMixin"
   ],
   "client": [
   ],

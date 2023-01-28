@@ -60,11 +60,11 @@ public class CompassController {
             if(compassPos.get().atY(0).distSqr(pos.atY(0)) < nearThreshold * nearThreshold) {
                 var yDiff = compassPos.get().getY() - pos.getY();
                 if(yDiff > nearThreshold) {
-                    infected.displayClientMessage(Component.literal("There are Speed-runners above you").withStyle(ChatFormatting.GOLD), true);
+                    infected.displayClientMessage(Component.literal("There are speed-runners above you").withStyle(ChatFormatting.GOLD), true);
                 } else if(yDiff < -nearThreshold) {
-                    infected.displayClientMessage(Component.literal("There are Speed-runners below you").withStyle(ChatFormatting.GOLD), true);
+                    infected.displayClientMessage(Component.literal("There are speed-runners below you").withStyle(ChatFormatting.GOLD), true);
                 } else {
-                    infected.displayClientMessage(Component.literal("There are Speed-runners nearby").withStyle(ChatFormatting.GREEN), true);
+                    infected.displayClientMessage(Component.literal("There are speed-runners nearby").withStyle(ChatFormatting.GREEN), true);
                 }
             }
 
