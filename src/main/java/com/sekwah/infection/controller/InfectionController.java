@@ -40,6 +40,7 @@ public class InfectionController {
     public final CustomBossEvents bossevents;
     public final InfectionConfigController configController;
     public final InfectedInventoryController inventoryController;
+    public final CompassController compassController;
     public PlayerTeam speedRunnerTeam;
     public PlayerTeam infectedTeam;
 
@@ -74,6 +75,7 @@ public class InfectionController {
 
         this.configController = new InfectionConfigController();
         this.inventoryController = new InfectedInventoryController();
+        this.compassController = new CompassController();
     }
 
     public boolean hasStarted() {
@@ -250,6 +252,8 @@ public class InfectionController {
         },1, (server) -> {
             this.remainingPlayersBar.hide();
         });
+
+        this.serverTaskScheduler.scheduleIntervalTickEvent(this.compassController::tick, 20 * 5);
 
         this.inventoryController.register();
 

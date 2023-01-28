@@ -1,7 +1,10 @@
 package com.sekwah.infection.controller;
 
 import com.sekwah.infection.InfectionMod;
+import com.sekwah.infection.mixin.CompassItemAccessor;
 import com.sekwah.infection.scheduler.DelayedTickEvent;
+import net.minecraft.ChatFormatting;
+import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.game.ClientboundSetCarriedItemPacket;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
@@ -10,7 +13,6 @@ import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.ItemLike;
-import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 
 public class InfectedInventoryController {
@@ -177,6 +179,10 @@ public class InfectedInventoryController {
             var item = infectedInventory.remainingHotbar[i].asItem().getDefaultInstance();
             if(!item.is(Items.COMPASS)) {
                 item.setCount(item.getMaxStackSize());
+            } else {
+                item.setHoverName(Component.literal("Player Tracker"));
+                CompassItemAccessor compassItem = (CompassItemAccessor) Items.COMPASS;
+                compassItem.invokeAddLodestoneTags(player.getLevel().dimension(), player.blockPosition(), item.getTag());
             }
             inventory.setItem(i + 1, item);
         }
@@ -215,6 +221,7 @@ public class InfectedInventoryController {
             player.playNotifySound(SoundEvents.WITHER_SPAWN, SoundSource.MASTER, Float.MAX_VALUE, 1f);
             this.handleInfectedItems(player);
         }
+        InfectionMod.infectionController.compassController.tick(server);
     }
 
     public void start() {
