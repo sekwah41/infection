@@ -2,6 +2,7 @@ package com.sekwah.infection.commands;
 
 import com.mojang.brigadier.Command;
 import com.mojang.brigadier.CommandDispatcher;
+import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
@@ -38,9 +39,21 @@ public class InfectionCommand {
         .then(Commands.literal("stop").executes(InfectionCommand::stop))
         .then(Commands.literal("setup").executes(InfectionCommand::setup))
         .then(Commands.literal("start").executes(InfectionCommand::start))
-        .then(Commands.literal("upgrade").executes(InfectionCommand::upgrade));
+        .then(Commands.literal("upgrade").executes(InfectionCommand::upgrade))
+        .then(Commands.literal("config")
+                .then(Commands.literal("compass").then(Commands.argument("number", IntegerArgumentType.integer(0)).executes(InfectionCommand::configCompass)))
+        );
 
         dispatcher.register(infection);
+    }
+
+    private static int configCompass(CommandContext<CommandSourceStack> ctx) {
+        var accuracy = IntegerArgumentType.getInteger(ctx, "number");
+        sendInfectionMessage(ctx, Component.literal("Setting compass accuracy to: " + accuracy + " blocks").withStyle(GREEN));
+        var config = InfectionMod.infectionController.configController;
+        config.getConfig().compassAccuracy = accuracy;
+        config.saveConfig();
+        return Command.SINGLE_SUCCESS;
     }
 
     public static int hardreset(CommandContext<CommandSourceStack> ctx) {
