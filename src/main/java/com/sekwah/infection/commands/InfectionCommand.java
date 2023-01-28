@@ -9,6 +9,7 @@ import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.suggestion.SuggestionProvider;
 import com.sekwah.infection.InfectionMod;
 import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.commands.Commands;
 import net.minecraft.commands.SharedSuggestionProvider;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
@@ -19,107 +20,103 @@ import static net.minecraft.commands.Commands.literal;
 
 public class InfectionCommand {
 
-    private static final String[] SUB_COMMANDS = new String[]{"infect", "setup", "start", "shownames", "hidenames", "reload", "lock", "unlock"};
-
-    private static SuggestionProvider<CommandSourceStack> SUB_COMMAND_SUGGESTIONS = (ctx, builder)
-            -> SharedSuggestionProvider.suggest(SUB_COMMANDS, builder);
-
     private static final String FUNCTION_TRIGGER = "functionTrigger";
     public static void register(CommandDispatcher<CommandSourceStack> dispatcher) {
         LiteralArgumentBuilder<CommandSourceStack> infection = literal("infection").requires((sender) -> sender.hasPermission(2))
                 .executes(ctx -> {
             ctx.getSource().sendSuccess(Component.literal("Hey, this is the infection command :D"), true);
             return Command.SINGLE_SUCCESS;
-        }).then(argument(FUNCTION_TRIGGER, StringArgumentType.word()).suggests(SUB_COMMAND_SUGGESTIONS).executes(ctx -> {
-                    String subCommand = StringArgumentType.getString(ctx, FUNCTION_TRIGGER);
-                    switch (subCommand) {
-                        case "hardreset" -> hardreset(ctx);
-                        case "shownames" -> shownames(ctx);
-                        case "hidenames" -> hidenames(ctx);
-                        case "infect" -> infect(ctx);
-                        case "lock" -> lock(ctx);
-                        case "unlock" -> unlock(ctx);
-                        case "reload" -> reload(ctx);
-                        case "stop" -> stop(ctx);
-                        case "setup" -> setup(ctx);
-                        case "start" -> start(ctx);
-                        case "upgrade" -> upgrade(ctx);
-                        default -> unrecognised(ctx, subCommand);
-                    }
-                    return Command.SINGLE_SUCCESS;
-                })
-        );
+        })
+        .then(Commands.literal("hardreset").executes(InfectionCommand::hardreset))
+        .then(Commands.literal("hardreset").executes(InfectionCommand::hardreset))
+        .then(Commands.literal("shownames").executes(InfectionCommand::shownames))
+        .then(Commands.literal("hidenames").executes(InfectionCommand::hidenames))
+        .then(Commands.literal("infect").executes(InfectionCommand::infect))
+        .then(Commands.literal("lock").executes(InfectionCommand::lock))
+        .then(Commands.literal("unlock").executes(InfectionCommand::unlock))
+        .then(Commands.literal("reload").executes(InfectionCommand::reload))
+        .then(Commands.literal("stop").executes(InfectionCommand::stop))
+        .then(Commands.literal("setup").executes(InfectionCommand::setup))
+        .then(Commands.literal("start").executes(InfectionCommand::start))
+        .then(Commands.literal("upgrade").executes(InfectionCommand::upgrade));
 
         dispatcher.register(infection);
     }
 
-    public static void hardreset(CommandContext<CommandSourceStack> ctx) {
+    public static int hardreset(CommandContext<CommandSourceStack> ctx) {
         sendInfectionMessage(ctx, Component.literal("Hard resetting game").withStyle(GREEN));
         InfectionMod.infectionController.hardReset();
+        return Command.SINGLE_SUCCESS;
     }
 
-    public static void shownames(CommandContext<CommandSourceStack> ctx) {
+    public static int shownames(CommandContext<CommandSourceStack> ctx) {
         sendInfectionMessage(ctx, Component.literal("Showing speedrunner names").withStyle(GREEN));
         InfectionMod.infectionController.setRunnerNamesVisible(true);
+        return Command.SINGLE_SUCCESS;
     }
 
-    public static void reload(CommandContext<CommandSourceStack> ctx) {
+    public static int reload(CommandContext<CommandSourceStack> ctx) {
         sendInfectionMessage(ctx, Component.literal("Reloading config").withStyle(GREEN));
         InfectionMod.infectionController.configController.loadConfig();
+        return Command.SINGLE_SUCCESS;
     }
 
 
-    public static void lock(CommandContext<CommandSourceStack> ctx) {
+    public static int lock(CommandContext<CommandSourceStack> ctx) {
         sendInfectionMessage(ctx, Component.literal("Locking in the players").withStyle(GREEN));
         InfectionMod.infectionController.lock();
+        return Command.SINGLE_SUCCESS;
     }
 
 
-    public static void unlock(CommandContext<CommandSourceStack> ctx) {
+    public static int unlock(CommandContext<CommandSourceStack> ctx) {
         sendInfectionMessage(ctx, Component.literal("Unlocking the players").withStyle(RED));
         InfectionMod.infectionController.unlock();
+        return Command.SINGLE_SUCCESS;
     }
 
-    public static void hidenames(CommandContext<CommandSourceStack> ctx) {
+    public static int hidenames(CommandContext<CommandSourceStack> ctx) {
         sendInfectionMessage(ctx, Component.literal("Hiding speedrunner names").withStyle(RED));
         InfectionMod.infectionController.setRunnerNamesVisible(false);
+        return Command.SINGLE_SUCCESS;
     }
 
-    public static void stop(CommandContext<CommandSourceStack> ctx) {
+    public static int stop(CommandContext<CommandSourceStack> ctx) {
         sendInfectionMessage(ctx, Component.literal("Countdown cancelled!").withStyle(RED));
+        return Command.SINGLE_SUCCESS;
     }
 
-    public static void start(CommandContext<CommandSourceStack> ctx) {
+    public static int start(CommandContext<CommandSourceStack> ctx) {
         sendInfectionMessage(ctx, Component.literal("Infection countdown started!").withStyle(GREEN));
         InfectionMod.infectionController.startCountdown();
+        return Command.SINGLE_SUCCESS;
     }
 
-    public static void setup(CommandContext<CommandSourceStack> ctx) {
+    public static int setup(CommandContext<CommandSourceStack> ctx) {
         sendInfectionMessage(ctx, Component.literal("Preparing the event.").withStyle(GREEN));
         InfectionMod.infectionController.setup();
+        return Command.SINGLE_SUCCESS;
     }
 
-    public static void infect(CommandContext<CommandSourceStack> ctx) {
+    public static int infect(CommandContext<CommandSourceStack> ctx) {
         sendInfectionMessage(ctx, Component.literal("A player will be infected.").withStyle(GREEN));
         try {
             InfectionMod.infectionController.infectPlayer(ctx.getSource().getPlayerOrException());
         } catch (CommandSyntaxException e) {
             throw new RuntimeException(e);
         }
+        return Command.SINGLE_SUCCESS;
     }
 
-    public static void upgrade(CommandContext<CommandSourceStack> ctx) {
+    public static int upgrade(CommandContext<CommandSourceStack> ctx) {
         sendInfectionMessage(ctx, Component.literal("Upgrading the infection equipment!").withStyle(GREEN));
         InfectionMod.infectionController.inventoryController.upgrade(ctx.getSource().getServer());
+        return Command.SINGLE_SUCCESS;
     }
 
 
     public static MutableComponent text(String text) {
         return Component.literal(text);
-    }
-
-    public static void unrecognised(CommandContext<CommandSourceStack> ctx, String subCommand) {
-        sendInfectionMessage(ctx, Component.literal("Did not recognise subcommand: " + subCommand).withStyle(RED));
     }
 
     public static void sendInfectionMessage(CommandContext<CommandSourceStack> ctx, MutableComponent text) {
