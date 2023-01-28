@@ -11,12 +11,13 @@
     "FoodDataMixin",
     "InfectedNoTargetMixin",
     "InventoryMixin",
+    "PlayerAccessor",
     "PlayerListMixin",
     "PlayerMixin",
     "ServerGamePacketListenerImplMixin",
     "ServerPlayerMixin",
     "TestCommandDisableMixin",
-    "PlayerAccessor"
+    "BlockItemMixin"
   ],
   "client": [
   ],
