@@ -23,7 +23,9 @@ abstract class ServerPlayerMixin extends LivingEntity {
     @Inject(method = "die", at = @At("TAIL"))
     private void onPlayerDeath(DamageSource damageSource, CallbackInfo ci) {
         if(InfectionMod.infectionController.hasStarted()) {
-            InfectionMod.infectionController.infectPlayer((ServerPlayer) (Object) this);
+            InfectionMod.infectionController.serverTaskScheduler.scheduleTickEvent((server) -> {
+                InfectionMod.infectionController.infectPlayer((ServerPlayer) (Object) this);
+            }, 0);
         }
     }
 
