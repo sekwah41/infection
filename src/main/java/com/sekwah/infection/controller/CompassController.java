@@ -10,6 +10,7 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.level.block.Block;
 
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -50,14 +51,18 @@ public class CompassController {
             }).ifPresent(survivor -> {
                 var accuracy = InfectionMod.getConfig().compassAccuracy;
                 var rand = infected.getRandom();
-                compassPos.set(survivor.blockPosition().offset(
-                        rand.nextInt(accuracy) - accuracy / 2,
-                        rand.nextInt(accuracy) - accuracy / 2,
-                        rand.nextInt(accuracy) - accuracy / 2));
+                BlockPos destination = survivor.blockPosition();
+                if(accuracy > 0) {
+                    destination = destination.offset(
+                            rand.nextInt(accuracy + 1) - accuracy / 2,
+                            rand.nextInt(accuracy + 1) - accuracy / 2,
+                            rand.nextInt(accuracy + 1) - accuracy / 2);
+                }
+                compassPos.set(destination);
             });
 
             var distance = compassPos.get().distSqr(pos);
-            if(compassPos.get().atY(0).distSqr(pos.atY(0)) < nearThreshold * nearThreshold) {
+            if(compassPos.get().atY(0).distSqr(pos.atY(0)) < (nearThreshold * nearThreshold)) {
                 var yDiff = compassPos.get().getY() - pos.getY();
                 if(yDiff > nearThreshold) {
                     infected.displayClientMessage(Component.literal("There are speed-runners above you").withStyle(ChatFormatting.GOLD), true);
@@ -85,6 +90,11 @@ public class CompassController {
                 if(itemStack.is(Items.COMPASS)) {
 
                     CompoundTag compoundTag = itemStack.getTag();
+
+                    if(compoundTag == null) {
+                        compoundTag = new CompoundTag();
+                        itemStack.setTag(compoundTag);
+                    }
 
                     compassItem.invokeAddLodestoneTags(infected.getLevel().dimension(), compassPos.get(), compoundTag);
                 }
