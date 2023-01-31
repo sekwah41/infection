@@ -39,6 +39,7 @@ public class BucketItemMixin {
                 var isSpeedrunnerNear = entitiesNear.stream().filter(entity -> entity.getTeam() == InfectionMod.infectionController.speedRunnerTeam).count() > 0;
                 if(isSpeedrunnerNear) {
                     player.displayClientMessage(Component.literal("You cannot place lava near other speed-runners!").withStyle(ChatFormatting.RED), true);
+                    player.inventoryMenu.sendAllDataToRemote();
                     cir.setReturnValue(InteractionResultHolder.pass(itemStack));
                 }
             }
