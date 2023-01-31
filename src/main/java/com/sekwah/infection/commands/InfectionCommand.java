@@ -2,21 +2,18 @@ package com.sekwah.infection.commands;
 
 import com.mojang.brigadier.Command;
 import com.mojang.brigadier.CommandDispatcher;
+import com.mojang.brigadier.arguments.FloatArgumentType;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
-import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
-import com.mojang.brigadier.suggestion.SuggestionProvider;
 import com.sekwah.infection.InfectionMod;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
-import net.minecraft.commands.SharedSuggestionProvider;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 
 import static net.minecraft.ChatFormatting.*;
-import static net.minecraft.commands.Commands.argument;
 import static net.minecraft.commands.Commands.literal;
 
 public class InfectionCommand {
@@ -42,6 +39,10 @@ public class InfectionCommand {
         .then(Commands.literal("upgrade").executes(InfectionCommand::upgrade))
         .then(Commands.literal("config")
                 .then(Commands.literal("compass").then(Commands.argument("number", IntegerArgumentType.integer(0)).executes(InfectionCommand::configCompass)))
+                .then(Commands.literal("countdown").then(Commands.argument("number", IntegerArgumentType.integer(0)).executes(InfectionCommand::configCountdown)))
+                .then(Commands.literal("infectionHealDelay").then(Commands.argument("number", IntegerArgumentType.integer(0)).executes(InfectionCommand::configInfectionHealDelay)))
+                .then(Commands.literal("infectionHealSpeed").then(Commands.argument("number", IntegerArgumentType.integer(0)).executes(InfectionCommand::configInfectionHealSpeed)))
+                .then(Commands.literal("minsBetweenInfectionUpgrades").then(Commands.argument("number", FloatArgumentType.floatArg(0)).executes(InfectionCommand::configMinsBetweenInfectionUpgrades)))
         );
 
         dispatcher.register(infection);
@@ -52,6 +53,41 @@ public class InfectionCommand {
         sendInfectionMessage(ctx, Component.literal("Setting compass accuracy to: " + accuracy + " blocks").withStyle(GREEN));
         var config = InfectionMod.infectionController.configController;
         config.getConfig().compassAccuracy = accuracy;
+        config.saveConfig();
+        return Command.SINGLE_SUCCESS;
+    }
+
+    private static int configCountdown(CommandContext<CommandSourceStack> ctx) {
+        var timer = IntegerArgumentType.getInteger(ctx, "number");
+        sendInfectionMessage(ctx, Component.literal("Setting countdown to: " + timer + " seconds").withStyle(GREEN));
+        var config = InfectionMod.infectionController.configController;
+        config.getConfig().countdown = timer;
+        config.saveConfig();
+        return Command.SINGLE_SUCCESS;
+    }
+
+    private static int configInfectionHealDelay(CommandContext<CommandSourceStack> ctx) {
+        var delay = IntegerArgumentType.getInteger(ctx, "number");
+        sendInfectionMessage(ctx, Component.literal("Setting infection heal delay to: " + delay + " ticks").withStyle(GREEN));
+        var config = InfectionMod.infectionController.configController;
+        config.getConfig().infectionHealDelay = delay;
+        config.saveConfig();
+        return Command.SINGLE_SUCCESS;
+    }
+    private static int configMinsBetweenInfectionUpgrades(CommandContext<CommandSourceStack> ctx) {
+        var delay = FloatArgumentType.getFloat(ctx, "number");
+        sendInfectionMessage(ctx, Component.literal("Setting infection upgrade speed to: " + delay + " mins").withStyle(GREEN));
+        var config = InfectionMod.infectionController.configController;
+        config.getConfig().minsBetweenInfectionUpgrades = delay;
+        config.saveConfig();
+        return Command.SINGLE_SUCCESS;
+    }
+
+    private static int configInfectionHealSpeed(CommandContext<CommandSourceStack> ctx) {
+        var delay = IntegerArgumentType.getInteger(ctx, "number");
+        sendInfectionMessage(ctx, Component.literal("Setting infection heal speed to: " + delay + " ticks").withStyle(GREEN));
+        var config = InfectionMod.infectionController.configController;
+        config.getConfig().infectionHealSpeed = delay;
         config.saveConfig();
         return Command.SINGLE_SUCCESS;
     }
