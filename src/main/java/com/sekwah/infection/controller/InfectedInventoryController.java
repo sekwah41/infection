@@ -4,6 +4,7 @@ import com.sekwah.infection.InfectionMod;
 import com.sekwah.infection.mixin.CompassItemAccessor;
 import com.sekwah.infection.scheduler.DelayedTickEvent;
 import net.minecraft.ChatFormatting;
+import net.minecraft.nbt.ByteTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.game.ClientboundSetCarriedItemPacket;
 import net.minecraft.server.MinecraftServer;
@@ -12,6 +13,7 @@ import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.item.enchantment.Enchantments;
 import net.minecraft.world.level.ItemLike;
 import net.minecraft.world.level.block.Blocks;
 
@@ -173,12 +175,14 @@ public class InfectedInventoryController {
         }
         var firstInfected = player.getUUID().equals(InfectionMod.infectionController.firstInfected);
         var infectedInventory = infectedInventories[infectionStage];
-        var primaryItem = firstInfected ? infectedInventory.alphaWeapon : infectedInventory.defaultWeapon;
-        inventory.setItem(0, primaryItem.asItem().getDefaultInstance());
+        var primaryItem = (firstInfected ? infectedInventory.alphaWeapon : infectedInventory.defaultWeapon).asItem().getDefaultInstance();
+        primaryItem.getOrCreateTag().putBoolean("Unbreakable", true);
+        inventory.setItem(0, primaryItem);
         for (int i = 0; i < infectedInventory.remainingHotbar.length; i++) {
             var item = infectedInventory.remainingHotbar[i].asItem().getDefaultInstance();
             if(!item.is(Items.COMPASS)) {
                 item.setCount(item.getMaxStackSize());
+                item.getOrCreateTag().putBoolean("Unbreakable", true);
             } else {
                 item.setHoverName(Component.literal("Player Tracker"));
                 CompassItemAccessor compassItem = (CompassItemAccessor) Items.COMPASS;
@@ -187,7 +191,9 @@ public class InfectedInventoryController {
             inventory.setItem(i + 1, item);
         }
         for(int i = 0; i < infectedInventory.armor.length; i++) {
-            player.setItemSlot(armorSlotMapping[i], infectedInventory.armor[i].asItem().getDefaultInstance());
+            var item = infectedInventory.armor[i].asItem().getDefaultInstance();
+            item.getOrCreateTag().putBoolean("Unbreakable", true);
+            player.setItemSlot(armorSlotMapping[i], item);
         }
     }
 
