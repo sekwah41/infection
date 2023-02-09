@@ -316,6 +316,10 @@ public class InfectionController {
         foodDataAccessor.setTickTimer(0);
     }
 
+    public boolean isGameOver() {
+        return gameOver;
+    }
+
     /** infect a random player
      *
      */

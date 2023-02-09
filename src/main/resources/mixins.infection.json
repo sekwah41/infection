@@ -6,6 +6,7 @@
   ],
   "server": [
     "AbstractContainerMenuMixin",
+    "BedItemMixin",
     "BlockItemMixin",
     "BucketItemMixin",
     "CompassItemAccessor",
@@ -21,7 +22,8 @@
     "ServerGamePacketListenerImplMixin",
     "ServerPlayerMixin",
     "TestCommandDisableMixin",
-    "BedItemMixin"
+    "IronGolemMixin",
+    "SnowGolemMixin"
   ],
   "client": [
   ],
