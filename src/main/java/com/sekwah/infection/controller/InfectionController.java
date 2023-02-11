@@ -38,8 +38,8 @@ import static net.minecraft.ChatFormatting.*;
 public class InfectionController {
 
     public final CustomBossEvents bossevents;
-    public final InfectionConfigController configController;
-    public final InfectedInventoryController inventoryController;
+    public final ConfigController configController;
+    public final InventoryController inventoryController;
     public final CompassController compassController;
     public PlayerTeam speedRunnerTeam;
     public PlayerTeam infectedTeam;
@@ -73,8 +73,8 @@ public class InfectionController {
         this.scoreboard = server.getScoreboard();
         this.bossevents = server.getCustomBossEvents();
 
-        this.configController = new InfectionConfigController();
-        this.inventoryController = new InfectedInventoryController();
+        this.configController = new ConfigController();
+        this.inventoryController = new InventoryController();
         this.compassController = new CompassController();
     }
 

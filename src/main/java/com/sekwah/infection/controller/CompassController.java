@@ -4,14 +4,17 @@ import com.sekwah.infection.InfectionMod;
 import com.sekwah.infection.mixin.CompassItemAccessor;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.GlobalPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.item.Items;
-import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.Level;
 
+import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
 
 /**
@@ -41,6 +44,7 @@ public class CompassController {
             // TODO get a location for this player to set all their compasses to.
 
             AtomicReference<BlockPos> compassPos = new AtomicReference<>(pos);
+            AtomicReference<ResourceKey<Level>> targetDimension = new AtomicReference<>(infected.level.dimension());
 
             speedRunners.stream().filter(survivor -> survivor.getLevel().dimension() == level).min((s1, s2) -> {
                 var pos1 = s1.blockPosition();
@@ -59,6 +63,7 @@ public class CompassController {
                             rand.nextInt(accuracy + 1) - accuracy / 2);
                 }
                 compassPos.set(destination);
+                targetDimension.set(survivor.level.dimension());
             });
 
             var distance = compassPos.get().distSqr(pos);
@@ -85,9 +90,11 @@ public class CompassController {
                 infected.addEffect(new MobEffectInstance(MobEffects.JUMP, potionTicks, potionModifier / 4 + 1, true, true ));
             }
 
+            infected.setLastDeathLocation(Optional.of(GlobalPos.of(infected.level.dimension(), compassPos.get())));
+
             for (int i = 0; i < 9; i++) {
                 var itemStack = inventory.getItem(i);
-                if(itemStack.is(Items.COMPASS)) {
+                if(itemStack.is(Items.COMPASS) && itemStack.getDisplayName().getString().contains(InventoryController.PLAYER_TRACKER_NAME.getString())) {
 
                     CompoundTag compoundTag = itemStack.getTag();
 

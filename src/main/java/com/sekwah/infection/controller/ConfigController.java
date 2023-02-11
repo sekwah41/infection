@@ -8,13 +8,13 @@ import net.fabricmc.loader.api.FabricLoader;
 
 import java.io.*;
 
-public class InfectionConfigController {
+public class ConfigController {
 
     private final Gson gson;
     private File file;
     private InfectionConfig config;
 
-    public InfectionConfigController() {
+    public ConfigController() {
         this.gson = new GsonBuilder()
                 .setPrettyPrinting()
                 .create();
