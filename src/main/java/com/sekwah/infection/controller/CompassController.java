@@ -36,17 +36,20 @@ public class CompassController {
         infectedPlayers.forEach(infected -> {
             var inventory = infected.getInventory();
 
-            var level = infected.getLevel().dimension();
-            // Try to find a player in the same world
+            var dimension = infected.getLevel().dimension();
 
+            // abuse this to make the compass spin
+            var diffLevel = dimension == Level.OVERWORLD ? Level.NETHER : Level.OVERWORLD;
+
+            // Try to find a player in the same world
             var pos = infected.blockPosition();
 
             // TODO get a location for this player to set all their compasses to.
 
-            AtomicReference<BlockPos> compassPos = new AtomicReference<>(pos);
-            AtomicReference<ResourceKey<Level>> targetDimension = new AtomicReference<>(infected.level.dimension());
+            AtomicReference<BlockPos> compassPos = new AtomicReference<>(pos.offset(10000,0,0));
+            AtomicReference<ResourceKey<Level>> targetDimension = new AtomicReference<>(diffLevel);
 
-            speedRunners.stream().filter(survivor -> survivor.getLevel().dimension() == level).min((s1, s2) -> {
+            speedRunners.stream().filter(survivor -> survivor.getLevel().dimension() == dimension).min((s1, s2) -> {
                 var pos1 = s1.blockPosition();
                 var pos2 = s2.blockPosition();
                 var dist1 = pos1.distSqr(pos);
@@ -103,7 +106,7 @@ public class CompassController {
                         itemStack.setTag(compoundTag);
                     }
 
-                    compassItem.invokeAddLodestoneTags(infected.getLevel().dimension(), compassPos.get(), compoundTag);
+                    compassItem.invokeAddLodestoneTags(targetDimension.get(), compassPos.get(), compoundTag);
                 }
             }
         });

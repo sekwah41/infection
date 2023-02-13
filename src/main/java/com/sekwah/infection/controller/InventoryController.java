@@ -40,6 +40,14 @@ public class InventoryController {
     public static final Component PLAYER_TRACKER_NAME = Component.literal("Player Tracker");
     public static final Component PORTAL_TRACKER_NAME = Component.literal("Portal Tracker");
 
+    public ItemStack createPortalCompass() {
+        var portalCompass = new ItemStack(Items.COMPASS).setHoverName(PORTAL_TRACKER_NAME);
+
+        portalCompass.getOrCreateTag().putInt("CustomModelData", 1);
+
+        return portalCompass;
+    }
+
     private List<Function<Boolean, InfectedInventory>> infectedInvetoryCreators = List.of(
             //Stage 1 -
             //Wooden Sword
@@ -58,7 +66,7 @@ public class InventoryController {
                             new ItemStack(Items.COMPASS).setHoverName(PLAYER_TRACKER_NAME),
                             new ItemStack(Items.AIR),
                             new ItemStack(Items.AIR),
-                            new ItemStack(Items.COMPASS).setHoverName(PORTAL_TRACKER_NAME),
+                            createPortalCompass(),
                     }),
             //Stage 2 -
             //Stone Sword
@@ -82,7 +90,7 @@ public class InventoryController {
                             new ItemStack(Items.COMPASS).setHoverName(PLAYER_TRACKER_NAME),
                             new ItemStack(Items.AIR),
                             new ItemStack(Items.AIR),
-                            new ItemStack(Items.COMPASS).setHoverName(PORTAL_TRACKER_NAME),
+                            createPortalCompass(),
                     }),
             //Stage 3 -
             //Iron Sword
@@ -106,7 +114,7 @@ public class InventoryController {
                             new ItemStack(Items.COMPASS).setHoverName(PLAYER_TRACKER_NAME),
                             new ItemStack(Items.AIR),
                             new ItemStack(Items.AIR),
-                            new ItemStack(Items.COMPASS).setHoverName(PORTAL_TRACKER_NAME),
+                            createPortalCompass(),
                     }),
             //Stage 4 -
             //Diamond Sword
@@ -130,7 +138,7 @@ public class InventoryController {
                             new ItemStack(Items.COMPASS).setHoverName(PLAYER_TRACKER_NAME),
                             new ItemStack(Items.AIR),
                             new ItemStack(Items.AIR),
-                            new ItemStack(Items.COMPASS).setHoverName(PORTAL_TRACKER_NAME),
+                            createPortalCompass(),
                     }),
             //Stage 5 -
             //Netherite Sword
@@ -154,7 +162,7 @@ public class InventoryController {
                             new ItemStack(Items.COMPASS).setHoverName(PLAYER_TRACKER_NAME),
                             new ItemStack(Items.AIR),
                             new ItemStack(Items.AIR),
-                            new ItemStack(Items.COMPASS).setHoverName(PORTAL_TRACKER_NAME),
+                            createPortalCompass(),
                     })
     );
 //    private InfectedInventory[] infectedInventories = {
